@@ -9,7 +9,7 @@ from pygame_viztools.utils import to_np_array
 
 TARGET_NUM_POINTS = 12
 TARGET_DIVIDENDS = [1, 2.5, 5, 10]
-DEFAULT_SCREEN_SIZE = np.array([1280, 720])
+DEFAULT_SCREEN_SIZE = (1280, 720)
 
 
 class CoordinateSystem:
@@ -162,7 +162,7 @@ def create_affine_transformation(
     return translate_coord @ scale_coord
 
 
-def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSystem, render_font):
+def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSystem, render_font: pg.font.Font):
     def adapt_quotient(quotient):
         if quotient <= 0:
             raise ValueError('Invalid quotient: {}'.format(quotient))
@@ -223,7 +223,8 @@ def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSyst
                 font = render_font.render(float_format.format(x), True, pg.Color(120, 120, 120), pg.Color(0, 0, 0, 0))
                 pos = coordinate_system.space_to_screen(np.array([x, 0]))
                 pos += 10
-                screen.blit(font, pos)
+                render_pos = tuple(pos.flatten().tolist())
+                screen.blit(font, render_pos)
 
     if 0 < zero_point[0] < screen.get_width():
         for y in y_points:
@@ -232,4 +233,5 @@ def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSyst
                 font = render_font.render(float_format.format(y), True, pg.Color(120, 120, 120), pg.Color(0, 0, 0, 0))
                 pos = coordinate_system.space_to_screen(np.array([0, y]))
                 pos += 10
-                screen.blit(font, pos)
+                render_pos = tuple(pos.flatten().tolist())
+                screen.blit(font, render_pos)
