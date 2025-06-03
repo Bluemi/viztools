@@ -9,8 +9,8 @@ description = "Interactively visualize data using pygame."
 authors = [
     { name="Bruno Schilling", email="bruno.schilling@protonmail.ch" }
 ]
-license = { text = "MIT" }
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.0",
