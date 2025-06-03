@@ -163,6 +163,8 @@ def create_affine_transformation(
 
 
 def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSystem, render_font: pg.font.Font):
+    screen.fill((0, 0, 0))
+
     def adapt_quotient(quotient):
         if quotient <= 0:
             raise ValueError('Invalid quotient: {}'.format(quotient))

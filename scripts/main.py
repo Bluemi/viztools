@@ -16,7 +16,6 @@ class SimpleViewer(Viewer):
         pass
 
     def render(self):
-        self.screen.fill((0, 0, 0))
         self.render_coordinate_system()
         self.render_drawables([self.points])
 
