@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Tuple, Optional, List, Union
+from typing import Tuple, Optional, List
 
 import pygame as pg
 
@@ -9,8 +9,7 @@ from pygame_viztools.drawable import Drawable
 
 class Viewer(ABC):
     def __init__(
-            self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60,
-            render_coordinate_system: bool = True, font_size: int = 16,
+            self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16,
     ):
         pg.init()
         pg.key.set_repeat(130, 25)
@@ -27,7 +26,6 @@ class Viewer(ABC):
             self.screen = pg.display.set_mode(screen_size, pg.RESIZABLE)
 
         self.coordinate_system = CoordinateSystem(screen_size)
-        self.render_coordinate_system = render_coordinate_system
 
         self.render_font = pg.font.Font(pg.font.get_default_font(), font_size)
 
@@ -54,10 +52,10 @@ class Viewer(ABC):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system)
 
+    def render_coordinate_system(self):
+        draw_coordinate_system(self.screen, self.coordinate_system, self.render_font)
+
     def _render(self):
-        self.screen.fill((0, 0, 0))
-        if self.render_coordinate_system:
-            draw_coordinate_system(self.screen, self.coordinate_system, self.render_font)
         self.render()
         pg.display.flip()
 
