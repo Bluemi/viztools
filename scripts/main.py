@@ -21,6 +21,8 @@ class SimpleViewer(Viewer):
 
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
+        for p_index in self.points.clicked_points(event, self.coordinate_system):
+            self.points.colors[p_index] = pg.Color(255, 0, 0)
 
 
 def main():
