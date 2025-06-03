@@ -12,9 +12,6 @@ class SimpleViewer(Viewer):
             np.array([[0, 0], [1, 1], [-1, 2]]), size=0.2
         )
 
-    def tick(self, delta_time: float):
-        pass
-
     def render(self):
         self.render_coordinate_system()
         self.render_drawables([self.points])

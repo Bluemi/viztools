@@ -40,7 +40,6 @@ class Viewer(ABC):
             delta_time = self.clock.tick(self.framerate)
         pg.quit()
 
-    @abstractmethod
     def tick(self, delta_time: float):
         pass
 
