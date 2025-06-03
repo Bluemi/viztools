@@ -2,8 +2,8 @@
 import numpy as np
 import pygame as pg
 
-from pygame_viztools.drawable import Points
-from pygame_viztools.viewer import Viewer
+from viztools.drawable import Points
+from viztools.viewer import Viewer
 
 class SimpleViewer(Viewer):
     def __init__(self):

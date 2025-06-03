@@ -1,2 +1,2 @@
-# pygame_viztools
+# viztools
 Tools to visualize data using pygame

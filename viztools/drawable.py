@@ -4,7 +4,7 @@ from typing import List, Tuple
 import pygame as pg
 import numpy as np
 
-from pygame_viztools.coordinate_system import CoordinateSystem
+from viztools.coordinate_system import CoordinateSystem
 
 
 class Drawable(ABC):

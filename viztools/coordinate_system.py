@@ -4,7 +4,7 @@ import numbers
 import numpy as np
 import pygame as pg
 
-from pygame_viztools.utils import to_np_array
+from viztools.utils import to_np_array
 
 
 TARGET_NUM_POINTS = 12

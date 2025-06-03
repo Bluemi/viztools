@@ -3,8 +3,8 @@ from typing import Tuple, Optional, List
 
 import pygame as pg
 
-from pygame_viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
-from pygame_viztools.drawable import Drawable
+from viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
+from viztools.drawable import Drawable
 
 
 class Viewer(ABC):
