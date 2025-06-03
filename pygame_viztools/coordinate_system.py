@@ -22,7 +22,7 @@ class CoordinateSystem:
         # user control
         self.dragging: bool = False
         self.mouse_position = np.zeros(2, dtype=int)
-        self.zoom_factor = 1
+        self.zoom_factor = 100
 
     def zoom_out(self, focus_point=None, scale=1.2):
         scale = 1 / scale
@@ -55,7 +55,7 @@ class CoordinateSystem:
         """
         return self.space_to_screen(np.array([0.0, 0.0]))
 
-    def space_to_screen(self, mat: np.ndarray):
+    def space_to_screen(self, mat: np.ndarray) -> np.ndarray:
         """
         Transform the given matrix with the internal coordinates.
 
@@ -104,7 +104,7 @@ class CoordinateSystem:
         return render_needed
 
 
-def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False):
+def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False) -> np.ndarray:
     """
     Transforms a given matrix with the given transformation matrix.
     Transformation matrix should be of shape [2, 2] or [3, 3]. If transformation matrix is of shape [3, 3] and the

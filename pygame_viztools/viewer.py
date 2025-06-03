@@ -1,9 +1,10 @@
 from abc import abstractmethod, ABC
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Union
 
 import pygame as pg
 
 from pygame_viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
+from pygame_viztools.drawable import Drawable
 
 
 class Viewer(ABC):
@@ -48,6 +49,10 @@ class Viewer(ABC):
     @abstractmethod
     def render(self):
         pass
+
+    def render_drawables(self, drawables: List[Drawable]):
+        for drawable in drawables:
+            drawable.draw(self.screen, self.coordinate_system)
 
     def _render(self):
         self.screen.fill((0, 0, 0))
