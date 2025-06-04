@@ -1,5 +1,6 @@
+import time
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import pygame as pg
 import numpy as np
@@ -7,10 +8,17 @@ import numpy as np
 from viztools.coordinate_system import CoordinateSystem
 
 
+ColorTuple = Tuple[int, int, int, int]
+
+
 class Drawable(ABC):
     @abstractmethod
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
         pass
+
+
+def _color_to_tuple(color: pg.Color | np.ndarray) -> ColorTuple:
+    return color[0], color[1], color[2], color[3]
 
 
 class Points(Drawable):
@@ -28,14 +36,37 @@ class Points(Drawable):
         self.size = size
         if isinstance(colors, pg.Color):
             colors = [colors] * len(points)
-        self.colors = colors
-        assert len(self.colors) == len(self.points), 'Number of colors must match number of points.'
+        self._colors: np.ndarray = np.array([_color_to_tuple(c) for c in colors])
+        assert len(self._colors) == len(self.points), 'Number of colors must match number of points.'
+
+        self._color_set: List[ColorTuple] = [_color_to_tuple(c) for c in np.unique(self._colors, axis=0)]
+
+    def set_color(self, color: pg.Color | Tuple[int, int, int], index: int):
+        color = _color_to_tuple(color)
+        self._colors[index] = color
+        if color not in self._color_set:
+            self._color_set.append(color)
 
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
         draw_size = self._get_draw_size(coordinate_system)
-        screen_points = to_draw_positions(self.points, coordinate_system, screen_size, draw_size)
-        for pos, color in zip(screen_points, self.colors):
-            pg.draw.circle(screen, color, pos, draw_size)
+
+        # filter out invalid positions
+        screen_points = coordinate_system.space_to_screen(self.points.T).T
+        valid_positions = _get_valid_positions(screen_points, draw_size, screen_size)
+        screen_points = screen_points[valid_positions]
+        valid_colors = self._colors[valid_positions]
+
+        # create blit surfaces
+        surfaces = _create_point_surfaces(self._color_set, draw_size)
+        end_time = time.perf_counter()
+
+        tuple_colors = [_color_to_tuple(c) for c in valid_colors]
+
+        # draw
+        blit_sequence = []
+        for pos, color in zip(screen_points, tuple_colors):
+            blit_sequence.append((surfaces[color], pos - draw_size))
+        screen.blits(blit_sequence)
 
     def _get_draw_size(self, coordinate_system):
         draw_size = self.size
@@ -45,12 +76,12 @@ class Points(Drawable):
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
-        Returns the indices of the points clicked by the mouse. Returns empty array if no point was clicked.
+        Returns the indices of the points clicked by the mouse. Returns an empty array if no point was clicked.
 
         :param event: The event to check.
         :param coordinate_system: The coordinate system to use.
         """
-        if event.type == pg.MOUSEBUTTONDOWN:
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             draw_size = self._get_draw_size(coordinate_system)
 
             screen_pos = np.array(event.pos).reshape(1, 2)
@@ -60,28 +91,37 @@ class Points(Drawable):
         return np.array([])
 
 
+def _create_point_surfaces(
+        colors: List[ColorTuple], draw_size: int
+) -> Dict[ColorTuple, pg.Surface]:
+    surfaces = {}
+    for color in colors:
+        point_surface = pg.Surface((draw_size * 2, draw_size * 2), pg.SRCALPHA)
+        point_surface.fill((0, 0, 0, 0))
+        pg.draw.circle(point_surface, color, (draw_size, draw_size), draw_size)
+        surfaces[color] = point_surface
+    return surfaces
+
+
+def _get_valid_positions(screen_points: np.ndarray, draw_size: int, screen_size: np.ndarray) -> np.ndarray:
+    return np.where(np.logical_and(
+        np.logical_and(screen_points[:, 0] > -draw_size, (screen_points[:, 0] < screen_size[0] + draw_size)),
+        np.logical_and(screen_points[:, 1] > -draw_size, (screen_points[:, 1] < screen_size[1] + draw_size))
+    ))[0]
+
+
 def to_draw_positions(
-        points: np.ndarray, coordinate_system: CoordinateSystem, screen_size: np.ndarray, draw_size: int
-) -> List[Tuple[int, int]]:
+        points: np.ndarray, coordinate_system: CoordinateSystem, valid_positions: np.ndarray
+) -> np.ndarray:
     """
     Converts a list of points to a list of positions to draw them on the screen.
     Filters out points outside the screen.
 
     :param points: Numpy array of shape [N, 2] where N is the number of points.
     :param coordinate_system: The coordinate system to use.
-    :param screen_size: The size of the screen in pixels.
-    :param draw_size: The radius of the points in screen space pixels.
-    :return: List of tuples (x, y) where x and y are the screen coordinates of the points.
+    :param valid_positions: Array with shape [N], where N is the number of points. This array contains booleans
+                            indicating, whether the point is visible on the screen.
+    :return: Numpy array with shape [K, 2] where K is the number of valid points that are visible on the screen.
     """
     screen_points = coordinate_system.space_to_screen(points.T).T
-    valid_positions = np.where(np.logical_and(
-        np.logical_and(screen_points[:, 0] > -draw_size, (screen_points[:, 0] < screen_size[0] + draw_size)),
-        np.logical_and(screen_points[:, 1] > -draw_size, (screen_points[:, 1] < screen_size[1] + draw_size))
-    ))
-    screen_points = screen_points[valid_positions]
-    return screen_points_to_tuple_list(screen_points)
-
-
-def screen_points_to_tuple_list(screen_points: np.ndarray) -> List[Tuple[int, int]]:
-    # noinspection PyTypeChecker
-    return [tuple(p) for p in screen_points.astype(int).tolist()]
+    return screen_points[valid_positions].astype(int)
