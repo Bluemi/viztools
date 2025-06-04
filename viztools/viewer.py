@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Tuple, Optional, List
 
+import numpy as np
 import pygame as pg
 
 from viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
@@ -49,7 +50,7 @@ class Viewer(ABC):
 
     def render_drawables(self, drawables: List[Drawable]):
         for drawable in drawables:
-            drawable.draw(self.screen, self.coordinate_system)
+            drawable.draw(self.screen, self.coordinate_system, np.array(self.screen.get_size()))
 
     def render_coordinate_system(self):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_font)
@@ -69,3 +70,5 @@ class Viewer(ABC):
             self.render_needed = True
         if event.type == pg.QUIT:
             self.running = False
+        if event.type in (pg.WINDOWENTER, pg.WINDOWFOCUSGAINED, pg.WINDOWRESIZED):
+            self.render_needed = True

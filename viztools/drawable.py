@@ -9,7 +9,7 @@ from viztools.coordinate_system import CoordinateSystem
 
 class Drawable(ABC):
     @abstractmethod
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
         pass
 
 
@@ -31,9 +31,9 @@ class Points(Drawable):
         self.colors = colors
         assert len(self.colors) == len(self.points), 'Number of colors must match number of points.'
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
-        screen_points = to_draw_positions(self.points, coordinate_system)
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
         draw_size = self._get_draw_size(coordinate_system)
+        screen_points = to_draw_positions(self.points, coordinate_system, screen_size, draw_size)
         for pos, color in zip(screen_points, self.colors):
             pg.draw.circle(screen, color, pos, draw_size)
 
@@ -60,11 +60,28 @@ class Points(Drawable):
         return np.array([])
 
 
-def to_draw_positions(points: np.ndarray, coordinate_system: CoordinateSystem) -> List[Tuple[int, int]]:
-    screen_points = coordinate_system.space_to_screen(points.T)
+def to_draw_positions(
+        points: np.ndarray, coordinate_system: CoordinateSystem, screen_size: np.ndarray, draw_size: int
+) -> List[Tuple[int, int]]:
+    """
+    Converts a list of points to a list of positions to draw them on the screen.
+    Filters out points outside the screen.
+
+    :param points: Numpy array of shape [N, 2] where N is the number of points.
+    :param coordinate_system: The coordinate system to use.
+    :param screen_size: The size of the screen in pixels.
+    :param draw_size: The radius of the points in screen space pixels.
+    :return: List of tuples (x, y) where x and y are the screen coordinates of the points.
+    """
+    screen_points = coordinate_system.space_to_screen(points.T).T
+    valid_positions = np.where(np.logical_and(
+        np.logical_and(screen_points[:, 0] > -draw_size, (screen_points[:, 0] < screen_size[0] + draw_size)),
+        np.logical_and(screen_points[:, 1] > -draw_size, (screen_points[:, 1] < screen_size[1] + draw_size))
+    ))
+    screen_points = screen_points[valid_positions]
     return screen_points_to_tuple_list(screen_points)
 
 
 def screen_points_to_tuple_list(screen_points: np.ndarray) -> List[Tuple[int, int]]:
     # noinspection PyTypeChecker
-    return [tuple(p) for p in screen_points.astype(int).T.tolist()]
+    return [tuple(p) for p in screen_points.astype(int).tolist()]
