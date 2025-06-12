@@ -11,9 +11,10 @@ class SimpleViewer(Viewer):
         self.points = Points(
             np.random.normal(size=(200000, 2)) * 5,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
-            size=10,
-            colors=pg.Color(0, 255, 0, 50)
+            size=np.random.randint(1, 5, size=200000) ** 2 / 250,
+            color=pg.Color(0, 255, 0, 50)
         )
+        self.marked_indices = np.zeros(len(self.points), dtype=bool)
 
     def render(self):
         self.render_coordinate_system()
@@ -21,8 +22,12 @@ class SimpleViewer(Viewer):
 
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
-        for p_index in self.points.clicked_points(event, self.coordinate_system):
-            self.points.set_color(pg.Color(255, 0, 0), p_index)
+        clicked_indices = self.points.clicked_points(event, self.coordinate_system)
+        if len(clicked_indices) > 0:
+            self.marked_indices[clicked_indices] = 1 - self.marked_indices[clicked_indices]
+            for p_index in clicked_indices:
+                color = pg.Color(255, 0, 0) if self.marked_indices[p_index] else pg.Color(0, 255, 0, 50)
+                self.points.set_color(color, p_index)
 
 
 def main():
