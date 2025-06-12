@@ -99,10 +99,16 @@ class Points(Drawable):
         surfaces = {}
         for k, surf_params in self._surface_parameters.items():
             draw_size = _get_draw_size(surf_params[0], zoom_factor, bool(surf_params[1]))
-            point_surface = pg.Surface((draw_size * 2, draw_size * 2), pg.SRCALPHA)
-            point_surface.fill((0, 0, 0, 0))
             color = surf_params[2:]
+
+            # old version with per pixel alpha
+            # point_surface = pg.Surface((draw_size * 2, draw_size * 2), pg.SRCALPHA)
+            # point_surface.fill((0, 0, 0, 0))
+            point_surface = pg.Surface((draw_size * 2, draw_size * 2))
+            point_surface.set_colorkey((0, 0, 0), pg.RLEACCEL)
+            point_surface.set_alpha(int(color[3]), pg.RLEACCEL)
             pg.draw.circle(point_surface, color, (draw_size, draw_size), draw_size)
+
             surfaces[k] = point_surface
         return surfaces
 

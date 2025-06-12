@@ -11,7 +11,8 @@ class SimpleViewer(Viewer):
         self.points = Points(
             np.random.normal(size=(200000, 2)) * 5,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
-            size=np.random.randint(1, 5, size=200000) ** 2 / 250,
+            # size=np.random.randint(1, 5, size=200000) ** 2 / 250,
+            size=5,
             color=pg.Color(0, 255, 0, 50)
         )
         self.marked_indices = np.zeros(len(self.points), dtype=bool)
