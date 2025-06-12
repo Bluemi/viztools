@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import numpy as np
-import pygame as pg
 
 from viztools.drawable import Points
 from viztools.render_backend.events import Event
@@ -28,7 +27,7 @@ class SimpleViewer(Viewer):
         if len(clicked_indices) > 0:
             self.marked_indices[clicked_indices] = 1 - self.marked_indices[clicked_indices]
             for p_index in clicked_indices:
-                color = np.array([255, 0, 0]) if self.marked_indices[p_index] else np.array([0, 255, 0, 50])
+                color = np.array([255, 0, 0, 50]) if self.marked_indices[p_index] else np.array([0, 255, 0, 50])
                 self.points.set_color(color, p_index)
 
 
