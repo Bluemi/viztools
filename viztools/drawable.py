@@ -6,8 +6,9 @@ import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
 from viztools.render_backend.base_render_backend import Surface, RenderBackend
+from viztools.render_backend.events import Event, EventType
 
-ColorTuple = Tuple[int, int, int, int]
+Color = np.ndarray | Tuple[int, int, int, int] | Tuple[int, int, int]
 
 
 class Drawable(ABC):
@@ -19,14 +20,18 @@ class Drawable(ABC):
         pass
 
 
-def _color_to_tuple(color: pg.Color | np.ndarray) -> ColorTuple:
-    return color[0], color[1], color[2], color[3]
+def _normalize_color(color: Color) -> np.ndarray:
+    if len(color) == 3:
+        return np.array([*color, 255], dtype=np.float32)
+    if len(color) != 4:
+        raise ValueError(f'color must be of length 3 or 4, not {len(color)}.')
+    return np.array(color, dtype=np.float32)
 
 
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
-            color: pg.Color | Iterable[pg.Color] | np.array = pg.Color(77, 178, 11)
+            color: np.ndarray | None = None
     ):
         """
         Drawable to display a set of points.
@@ -63,10 +68,15 @@ class Points(Drawable):
         self._size = size
 
         # colors
-        if isinstance(color, pg.Color):
-            color = np.array([_color_to_tuple(color)] * n_points, dtype=np.float32)
-        elif not isinstance(color, np.ndarray):
-            color = np.array([_color_to_tuple(c) for c in color], dtype=np.float32)
+        if color is None:
+            color = np.array([77, 178, 11])
+        if isinstance(color, np.ndarray):
+            if color.shape == (3,):
+                color = np.array([*color, 255], dtype=np.float32)
+            if color.shape == (4,):
+                color = np.repeat(color.reshape(1, -1), n_points, axis=0).astype(np.float32)
+        else:
+            color = np.array(color, dtype=np.float32)
         if color.shape != (n_points, 4):
             raise ValueError(f'colors must be a numpy array with shape ({n_points}, 4), not {color.shape}.')
         self._colors = color
@@ -84,9 +94,8 @@ class Points(Drawable):
     def _get_surf_param(self, index: int) -> np.ndarray:
         return np.concatenate([self._size[index, :], self._colors[index, :]], axis=0)
 
-    def set_color(self, color: pg.Color | Tuple[int, int, int], index: int):
-        color = _color_to_tuple(color)
-        self._colors[index, :] = color
+    def set_color(self, color: np.ndarray | Tuple[int, int, int, int], index: int):
+        self._colors[index, :] = _normalize_color(color)
         self._update_surf_params(index)
 
     def _update_surf_params(self, index: int):
@@ -147,14 +156,14 @@ class Points(Drawable):
             surface = surfaces[surf_params.tobytes()]
             screen.blit(surface, pos)
 
-    def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
+    def clicked_points(self, event: Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
         Returns the indices of the points clicked by the mouse. Returns an empty array if no point was clicked.
 
         :param event: The event to check.
         :param coordinate_system: The coordinate system to use.
         """
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+        if event.type == EventType.MOUSEBUTTONDOWN and event.button == 1:
             draw_size = self._get_draw_sizes(coordinate_system.zoom_factor)
 
             screen_pos = np.array(event.pos).reshape(1, 2)

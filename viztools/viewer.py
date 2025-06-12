@@ -6,6 +6,7 @@ import pygame as pg
 
 from viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
 from viztools.drawable import Drawable
+from viztools.render_backend.events import Event, EventType
 from viztools.render_backend.pygame_backend import PygameBackend
 
 
@@ -60,15 +61,15 @@ class Viewer(ABC):
         self.render_backend.swap_buffers()
 
     def _handle_events(self):
-        events = pg.event.get()
+        events = self.render_backend.get_events()
         for event in events:
             self.handle_event(event)
 
     @abstractmethod
-    def handle_event(self, event: pg.event.Event):
+    def handle_event(self, event: Event):
         if self.coordinate_system.handle_event(event):
             self.render_needed = True
-        if event.type == pg.QUIT:
+        if event.type == EventType.QUIT:
             self.running = False
-        if event.type in (pg.WINDOWENTER, pg.WINDOWFOCUSGAINED, pg.WINDOWRESIZED):
+        if event.type in (EventType.WINDOWENTER, EventType.WINDOWFOCUSGAINED, EventType.WINDOWRESIZED):
             self.render_needed = True

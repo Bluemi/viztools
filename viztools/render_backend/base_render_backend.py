@@ -78,7 +78,3 @@ class RenderBackend(ABC):
     @abstractmethod
     def get_events(self) -> List[Event]:
         pass
-
-    @abstractmethod
-    def draw_circle(self, surface: Surface, color: np.ndarray, pos: np.ndarray, radius: np.ndarray | float):
-        pass

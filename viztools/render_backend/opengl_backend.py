@@ -4,7 +4,7 @@ import numpy as np
 import pygame as pg
 
 from .base_render_backend import RenderBackend, Surface, Font
-from .events import Event, MouseMotionEvent, MouseWheelEvent, MouseButtonDownEvent, EventType
+from .events import Event
 
 
 class PygameFont(Font):
@@ -65,30 +65,7 @@ class PygameBackend(RenderBackend):
         pg.display.flip()
 
     def get_events(self) -> List[Event]:
-        events = [_map_event(e) for e in pg.event.get()]
-        return [e for e in events if e is not None]
+        pass
 
-
-def _map_event(event: pg.event.Event) -> Event | None:
-    if event.type == pg.QUIT:
-        return Event(EventType.QUIT)
-    elif event.type == pg.KEYDOWN:
-        return Event(EventType.KEYDOWN)
-    elif event.type == pg.KEYUP:
-        return Event(EventType.KEYUP)
-    elif event.type == pg.MOUSEBUTTONDOWN:
-        return MouseButtonDownEvent(event.button, event.pos)
-    elif event.type == pg.MOUSEBUTTONUP:
-        return Event(EventType.MOUSEBUTTONUP)
-    elif event.type == pg.MOUSEMOTION:
-        return MouseMotionEvent(event.pos, event.rel)
-    elif event.type == pg.WINDOWENTER:
-        return Event(EventType.WINDOWENTER)
-    elif event.type == pg.WINDOWFOCUSGAINED:
-        return Event(EventType.WINDOWFOCUSGAINED)
-    elif event.type == pg.WINDOWRESIZED:
-        return Event(EventType.WINDOWRESIZED)
-    elif event.type == pg.MOUSEWHEEL:
-        return MouseWheelEvent(event.y)
-    else:
-        return None
+    def draw_circle(self, surface: Surface, color: np.ndarray, pos: np.ndarray, radius: np.ndarray | float):
+        pass

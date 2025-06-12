@@ -34,7 +34,7 @@ class MouseWheelEvent(Event):
         self.scroll = scroll
 
 
-class MouseButtonDown(Event):
+class MouseButtonDownEvent(Event):
     def __init__(self, button: int, pos: np.ndarray):
         super().__init__(EventType.MOUSEBUTTONDOWN)
         self.button = button

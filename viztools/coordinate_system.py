@@ -2,9 +2,9 @@ from typing import Tuple
 import numbers
 
 import numpy as np
-import pygame as pg
 
 from viztools.render_backend.base_render_backend import Surface, Font
+from viztools.render_backend.events import EventType
 from viztools.utils import to_np_array
 
 
@@ -84,19 +84,19 @@ class CoordinateSystem:
         :return:
         """
         render_needed = False
-        if event.type == pg.MOUSEBUTTONDOWN:
+        if event.type == EventType.MOUSEBUTTONDOWN:
             self.dragging = True
             render_needed = True
-        elif event.type == pg.MOUSEBUTTONUP:
+        elif event.type == EventType.MOUSEBUTTONUP:
             self.dragging = False
             render_needed = True
-        elif event.type == pg.MOUSEMOTION:
+        elif event.type == EventType.MOUSEMOTION:
             self.mouse_position = np.array(event.pos, dtype=int)
             if self.dragging:
                 self.translate(np.array(event.rel))
                 render_needed = True
-        elif event.type == pg.MOUSEWHEEL:
-            if event.y < 0:
+        elif event.type == EventType.MOUSEWHEEL:
+            if event.scroll < 0:
                 self.zoom_out(focus_point=self.mouse_position)
                 render_needed = True
             else:
