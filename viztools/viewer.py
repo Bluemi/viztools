@@ -6,14 +6,17 @@ import pygame as pg
 
 from viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
 from viztools.drawable import Drawable
+from viztools.render_backend.pygame_backend import PygameBackend
 
 
 class Viewer(ABC):
     def __init__(
             self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16,
+            title: str = "Viewer"
     ):
-        pg.init()
-        pg.key.set_repeat(130, 25)
+        self.render_backend = PygameBackend()
+        self.render_backend.init()
+        self.render_backend.set_key_repeat(130, 25)
 
         self.running = True
         self.render_needed = True
@@ -21,14 +24,11 @@ class Viewer(ABC):
         self.framerate = framerate
 
         screen_size = screen_size or DEFAULT_SCREEN_SIZE
-        if screen_size == (0, 0):
-            self.screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
-        else:
-            self.screen = pg.display.set_mode(screen_size, pg.RESIZABLE)
+        self.screen = self.render_backend.create_window(title)
 
         self.coordinate_system = CoordinateSystem(screen_size)
 
-        self.render_font = pg.font.Font(pg.font.get_default_font(), font_size)
+        self.render_font = self.render_backend.get_font(font_size)
 
     def run(self):
         delta_time = 0
@@ -39,7 +39,7 @@ class Viewer(ABC):
                 self._render()
                 self.render_needed = False
             delta_time = self.clock.tick(self.framerate)
-        pg.quit()
+        self.render_backend.quit()
 
     def tick(self, delta_time: float):
         pass
@@ -50,14 +50,14 @@ class Viewer(ABC):
 
     def render_drawables(self, drawables: List[Drawable]):
         for drawable in drawables:
-            drawable.draw(self.screen, self.coordinate_system, np.array(self.screen.get_size()))
+            drawable.draw(self.screen, self.coordinate_system, np.array(self.screen.get_size()), self.render_backend)
 
     def render_coordinate_system(self):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_font)
 
     def _render(self):
         self.render()
-        pg.display.flip()
+        self.render_backend.swap_buffers()
 
     def _handle_events(self):
         events = pg.event.get()

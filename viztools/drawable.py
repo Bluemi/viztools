@@ -5,15 +5,17 @@ import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
-
+from viztools.render_backend.base_render_backend import Surface, RenderBackend
 
 ColorTuple = Tuple[int, int, int, int]
-RENDER_METHOD = 1
 
 
 class Drawable(ABC):
     @abstractmethod
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
+    def draw(
+            self, screen: Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray,
+            render_backend: RenderBackend
+    ):
         pass
 
 
@@ -96,22 +98,15 @@ class Points(Drawable):
         self._size[index, 1] = isinstance(size, float)
         self._update_surf_params(index)
 
-    def _create_point_surfaces(self, zoom_factor: float) -> Dict[bytes, pg.Surface]:
+    def _create_point_surfaces(self, render_backend: RenderBackend, zoom_factor: float) -> Dict[bytes, Surface]:
         surfaces = {}
         for k, surf_params in self._surface_parameters.items():
             draw_size = _get_draw_size(surf_params[0], zoom_factor, bool(surf_params[1]))
             color = surf_params[2:]
 
             # old version with per pixel alpha
-            if RENDER_METHOD == 0:
-                point_surface = pg.Surface((draw_size * 2, draw_size * 2), pg.SRCALPHA)
-            elif RENDER_METHOD == 1:
-                point_surface = pg.Surface((draw_size * 2, draw_size * 2))
-                point_surface.set_colorkey((0, 0, 0), pg.RLEACCEL)
-                point_surface.set_alpha(int(color[3]), pg.RLEACCEL)
-            else:
-                raise ValueError(f'Unknown render method {RENDER_METHOD}.')
-            pg.draw.circle(point_surface, color, (draw_size, draw_size), draw_size)
+            point_surface = render_backend.create_surface((draw_size * 2, draw_size * 2), enable_alpha=True)
+            point_surface.circle(color, (draw_size, draw_size), draw_size)
 
             surfaces[k] = point_surface
         return surfaces
@@ -128,7 +123,10 @@ class Points(Drawable):
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
+    def draw(
+            self, screen: Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray,
+            render_backend: RenderBackend
+    ):
         draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
 
         # filter out invalid positions
@@ -140,7 +138,7 @@ class Points(Drawable):
         screen_points -= valid_sizes.reshape(-1, 1)
 
         # create blit surfaces
-        surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
+        surfaces = self._create_point_surfaces(render_backend, coordinate_system.zoom_factor)
 
         # draw
         for pos, size, color, surf_params in zip(

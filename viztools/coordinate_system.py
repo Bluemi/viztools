@@ -4,6 +4,7 @@ import numbers
 import numpy as np
 import pygame as pg
 
+from viztools.render_backend.base_render_backend import Surface, Font
 from viztools.utils import to_np_array
 
 
@@ -126,6 +127,7 @@ def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False) 
 
     padded = False
     if transform_matrix.shape == (3, 3):
+        # noinspection PyTypeChecker
         mat = np.concatenate([mat, np.ones((1, mat.shape[1]))], axis=0)
         padded = True
 
@@ -162,8 +164,8 @@ def create_affine_transformation(
     return translate_coord @ scale_coord
 
 
-def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSystem, render_font: pg.font.Font):
-    screen.fill((0, 0, 0))
+def draw_coordinate_system(screen: Surface, coordinate_system: CoordinateSystem, render_font: Font):
+    screen.fill(np.array([0, 0, 0]))
 
     def adapt_quotient(quotient):
         if quotient <= 0:
@@ -182,12 +184,13 @@ def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSyst
 
         return best_fitting
 
+    width, height = screen.get_size()
     extreme_points = np.array([
         [0, 0],
-        [screen.get_width(), screen.get_height()]
+        [width, height]
     ]).T
     extreme_points = coordinate_system.screen_to_space(extreme_points).T
-    target_num_points = TARGET_NUM_POINTS * screen.get_width() // DEFAULT_SCREEN_SIZE[0]
+    target_num_points = TARGET_NUM_POINTS * width // DEFAULT_SCREEN_SIZE[0]
     target_dividend = (extreme_points[1, 0] - extreme_points[0, 0]) / target_num_points
     dividend = adapt_quotient(target_dividend)
     x_minimum = np.round(extreme_points[0, 0] / dividend) * dividend
@@ -196,11 +199,11 @@ def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSyst
     for x in x_points:
         vertical_lines = np.array([[x, 0], [x, 0]])
         transformed_vertical_lines = coordinate_system.space_to_screen(vertical_lines.T).T
-        transformed_vertical_lines[:, 1] = [0, screen.get_height()]
-        color = pg.Color(30, 30, 30)
+        transformed_vertical_lines[:, 1] = [0, height]
+        color = np.array([30, 30, 30])
         if x == 0:
-            color = pg.Color(50, 50, 50)
-        pg.draw.line(screen, color, transformed_vertical_lines[0], transformed_vertical_lines[1])
+            color = np.array([50, 50, 50])
+        screen.line(color, transformed_vertical_lines[0], transformed_vertical_lines[1])
 
     y_minimum = np.round(extreme_points[1, 1] / dividend) * dividend
     y_maximum = np.round(extreme_points[0, 1] / dividend) * dividend
@@ -209,31 +212,37 @@ def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSyst
     for y in y_points:
         horizontal_lines = np.array([[extreme_points[0, 0], y], [extreme_points[1, 0], y]])
         transformed_horizontal_lines = coordinate_system.space_to_screen(horizontal_lines.T).T
-        transformed_horizontal_lines[:, 0] = [0, screen.get_width()]
-        color = pg.Color(30, 30, 30)
+        transformed_horizontal_lines[:, 0] = [0, width]
+        color = np.array([30, 30, 30])
         if y == 0:
-            color = pg.Color(50, 50, 50)
-        pg.draw.line(screen, color, transformed_horizontal_lines[0], transformed_horizontal_lines[1])
+            color = np.array([50, 50, 50])
+        screen.line(color, transformed_horizontal_lines[0], transformed_horizontal_lines[1])
 
     # draw numbers
     zero_point = coordinate_system.space_to_screen(np.array([0, 0]))
 
-    if 0 < zero_point[1] < screen.get_height():
+    if 0 < zero_point[1] < height:
         for x in x_points:
             if abs(x) > 10 ** -5:
                 float_format = '{:.2f}' if abs(x) > 1 else '{:.2}'
-                font = render_font.render(float_format.format(x), True, pg.Color(120, 120, 120), pg.Color(0, 0, 0, 0))
+                font = render_font.render(
+                    float_format.format(x), np.array([120, 120, 120]), True, np.array([0, 0, 0, 0])
+                )
                 pos = coordinate_system.space_to_screen(np.array([x, 0]))
                 pos += 10
-                render_pos = tuple(pos.flatten().tolist())
+                # noinspection PyTypeChecker
+                render_pos: Tuple[int, int] = tuple(pos.flatten().tolist())
                 screen.blit(font, render_pos)
 
-    if 0 < zero_point[0] < screen.get_width():
+    if 0 < zero_point[0] < width:
         for y in y_points:
             if abs(y) > 10 ** -5:
                 float_format = '{:.2f}' if abs(y) > 1 else '{:.2}'
-                font = render_font.render(float_format.format(y), True, pg.Color(120, 120, 120), pg.Color(0, 0, 0, 0))
+                font = render_font.render(
+                    float_format.format(y), np.array([120, 120, 120]), True, np.array([0, 0, 0, 0])
+                )
                 pos = coordinate_system.space_to_screen(np.array([0, y]))
                 pos += 10
-                render_pos = tuple(pos.flatten().tolist())
+                # noinspection PyTypeChecker
+                render_pos: Tuple[int, int] = tuple(pos.flatten().tolist())
                 screen.blit(font, render_pos)
