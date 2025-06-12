@@ -1,71 +1,95 @@
+import warnings
 from typing import List, Tuple, Self
 
 import numpy as np
-import pygame as pg
+
+import OpenGL.GL
+import OpenGL.GLU
+import OpenGL.GLUT
 
 from .base_render_backend import RenderBackend, Surface, Font
-from .events import Event
+from .events import Event, MouseMotionEvent, MouseWheelEvent, MouseButtonDownEvent, EventType
 
 
-class PygameFont(Font):
-    def __init__(self, font: pg.font.Font, font_name: str, font_size: int):
+class OpenglFont(Font):
+    def __init__(self, font, font_name: str, font_size: int):
         super().__init__(font_name, font_size)
         self.font = font
 
     def render(self, text: str, color: np.ndarray, antialias: bool, background: np.ndarray = None) -> Surface:
-        return PygameSurface(self.font.render(text, antialias, color, background))
+        pass
 
 
-class PygameSurface(Surface):
-    def __init__(self, surface: pg.Surface):
+class OpenglSurface(Surface):
+    def __init__(self, surface):
         super().__init__()
-        self.surface = surface
+        pass
 
     def get_size(self) -> Tuple[int, int]:
-        return self.surface.get_size()
+        pass
 
     def fill(self, color: np.ndarray):
-        self.surface.fill(color)
+        pass
 
     def line(self, color: np.ndarray, start: np.ndarray, end: np.ndarray):
-        pg.draw.line(self.surface, color, start, end)
+        pass
 
     def circle(self, color: np.ndarray, pos: Tuple[int, int] | np.ndarray, radius: int):
-        pg.draw.circle(self.surface, color, pos, radius)
+        pass
 
     def blit(self, surface: Self, pos: Tuple[int, int]):
-        self.surface.blit(surface.surface, pos)
+        pass
 
 
-class PygameBackend(RenderBackend):
+class OpenglBackend(RenderBackend):
     def init(self):
-        pg.init()
+        OpenGL.GLUT.glutInit()
+        OpenGL.GLUT.glutInitDisplayMode(OpenGL.GLUT.GLUT_RGBA | OpenGL.GLUT.GLUT_DOUBLE)
 
     def quit(self):
-        pg.quit()
+        OpenGL.GLUT.glutLeaveMainLoop()
 
-    def get_font(self, font_size: int, font_name: str = '') -> PygameFont:
-        font_name = font_name or pg.font.get_default_font()
-        return PygameFont(pg.font.Font(font_name, font_size), font_name, font_size)
+    def get_font(self, font_size: int, font_name: str = '') -> OpenglFont:
+        if font_name == '':
+            font = OpenGL.GLUT.GLUT_BITMAP_HELVETICA_12 if font_size <= 12 else OpenGL.GLUT.GLUT_BITMAP_HELVETICA_18
+        else:
+            font = OpenGL.GLUT.GLUT_BITMAP_HELVETICA_12  # Default to Helvetica if custom font not found
+        return OpenglFont(font, font_name, font_size)
 
     def set_key_repeat(self, delay: int, interval: int):
-        pg.key.set_repeat(delay, interval)
+        # Not directly supported in OpenGL, would need custom implementation
+        warnings.warn('set_key_repeat is not supported in OpenGL, ignoring call to set_key_repeat()')
 
-    def create_window(self, title: str, size: Tuple[int, int] = (0, 0)) -> PygameSurface:
-        mode = pg.FULLSCREEN if size == (0, 0) else pg.RESIZABLE
-        return PygameSurface(pg.display.set_mode(size, mode))
+    def create_window(self, title: str, size: Tuple[int, int] = (0, 0)) -> OpenglSurface:
+        OpenGL.GLUT.glutInitWindowSize(*size)
+        window = OpenGL.GLUT.glutCreateWindow(title)
+        OpenGL.GL.glClearColor(0.0, 0.0, 0.0, 0.0)
+        OpenGL.GL.glMatrixMode(OpenGL.GL.GL_PROJECTION)
+        OpenGL.GL.glLoadIdentity()
+        OpenGL.GLU.gluOrtho2D(0, size[0], size[1], 0)
+        return OpenglSurface(window)
 
     def create_surface(self, size: Tuple[int, int], enable_alpha: bool = True) -> Surface:
-        flags = 0
+        # Create an OpenGL texture/framebuffer object
+        texture = OpenGL.GL.glGenTextures(1)
+        OpenGL.GL.glBindTexture(OpenGL.GL.GL_TEXTURE_2D, texture)
         if enable_alpha:
-            flags = flags | pg.SRCALPHA
-        return PygameSurface(pg.Surface(size, flags))
+            OpenGL.GL.glTexImage2D(OpenGL.GL.GL_TEXTURE_2D, 0, OpenGL.GL.GL_RGBA,
+                                   size[0], size[1], 0, OpenGL.GL.GL_RGBA,
+                                   OpenGL.GL.GL_UNSIGNED_BYTE, None)
+        else:
+            OpenGL.GL.glTexImage2D(OpenGL.GL.GL_TEXTURE_2D, 0, OpenGL.GL.GL_RGB,
+                                   size[0], size[1], 0, OpenGL.GL.GL_RGB,
+                                   OpenGL.GL.GL_UNSIGNED_BYTE, None)
+        return OpenglSurface(texture)
 
     def swap_buffers(self):
-        pg.display.flip()
+        OpenGL.GLUT.glutSwapBuffers()
 
     def get_events(self) -> List[Event]:
-        pass
-
-    def draw_circle(self, surface: Surface, color: np.ndarray, pos: np.ndarray, radius: np.ndarray | float):
-        pass
+        events = []
+        while OpenGL.GLUT.glutMainLoopEvent():
+            # Process GLUT events and convert them to our Event format
+            event = Event(EventType.QUIT)  # Placeholder
+            events.append(event)
+        return events

@@ -6,16 +6,23 @@ import pygame as pg
 
 from viztools.coordinate_system import DEFAULT_SCREEN_SIZE, CoordinateSystem, draw_coordinate_system
 from viztools.drawable import Drawable
+from viztools.render_backend import BackendType
 from viztools.render_backend.events import Event, EventType
+from viztools.render_backend.opengl_backend import OpenglBackend
 from viztools.render_backend.pygame_backend import PygameBackend
 
 
 class Viewer(ABC):
     def __init__(
             self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16,
-            title: str = "Viewer"
+            title: str = "Viewer", backend_type: BackendType = BackendType.PYGAME,
     ):
-        self.render_backend = PygameBackend()
+        if backend_type == BackendType.PYGAME:
+            self.render_backend = PygameBackend()
+        elif backend_type == BackendType.OPENGL:
+            self.render_backend = OpenglBackend()
+        else:
+            raise ValueError(f'Invalid backend type: {backend_type}')
         self.render_backend.init()
         self.render_backend.set_key_repeat(130, 25)
 
