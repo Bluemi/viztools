@@ -19,6 +19,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+opengl = [
+    "PyOpenGL"
+]
 
 # [project.scripts]
 # load_parliament_qa = "abgeordnetenwatch_python.cli.load_parliament_qa:main"

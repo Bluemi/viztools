@@ -3,9 +3,12 @@ from typing import List, Tuple, Self
 
 import numpy as np
 
-import OpenGL.GL
-import OpenGL.GLU
-import OpenGL.GLUT
+try:
+    import OpenGL.GL
+    import OpenGL.GLU
+    import OpenGL.GLUT
+except ImportError:
+    warnings.warn('OpenGL module not found, OpenGL backend will not be available.')
 
 from .base_render_backend import RenderBackend, Surface, Font
 from .events import Event, EventType
