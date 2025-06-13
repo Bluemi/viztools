@@ -23,7 +23,7 @@ class SimpleViewer(Viewer):
         # 2 - clicked
         self.point_type: np.ndarray = np.zeros(len(self.points), dtype=np.int8)
         self.overlay_text = OverlayText(
-            'This is short\n' + 'This is some longer text\n' * 20, OverlayPosition.RIGHTTOP,
+            'This is short\n' + 'This is some longer text\n' * 20, OverlayPosition.BOT,
             background_color=np.array([50, 50, 50, 128]),
             border_color=np.array([80, 80, 80, 128]),
         )

@@ -1,5 +1,4 @@
 from enum import StrEnum
-from typing import Literal
 
 import pygame as pg
 import numpy as np
@@ -22,7 +21,7 @@ class OverlayPosition(StrEnum):
 class OverlayText(Drawable):
     def __init__(
             self, text: str, position: np.ndarray | OverlayPosition, font_name: str = '',
-            font_size: int = 16, background_color: tuple[int, int, int] | tuple[int, int, int, int] | None = None,
+            font_size: int = 16, background_color: np.ndarray | None = None,
             border_color: np.ndarray | None = None, border_width: int = 2
     ):
         super().__init__()
@@ -42,6 +41,7 @@ class OverlayText(Drawable):
         max_width = max(surface.get_width() for surface in line_surfaces)
 
         combined_rect = pg.Rect(0, 0, max_width, total_height)
+        padding = self.border_width * 2 if self.border_color is not None else 0
 
         if isinstance(self.position, str):
             if self.position == OverlayPosition.TOP:
@@ -49,22 +49,21 @@ class OverlayText(Drawable):
             elif self.position == OverlayPosition.LEFT:
                 combined_rect.midleft = (0, screen.get_height() // 2)
             elif self.position == OverlayPosition.RIGHT:
-                combined_rect.midright = (screen.get_width(), screen.get_height() // 2)
+                combined_rect.midright = (screen.get_width()-padding, screen.get_height() // 2)
             elif self.position == OverlayPosition.BOT:
-                combined_rect.midbottom = (screen.get_width() // 2, screen.get_height())
+                combined_rect.midbottom = (screen.get_width() // 2, screen.get_height() - padding)
             elif self.position == OverlayPosition.RIGHTTOP:
-                combined_rect.topright = (screen.get_width(), 0)
+                combined_rect.topright = (screen.get_width() - padding, 0)
             elif self.position == OverlayPosition.LEFTTOP:
                 combined_rect.topleft = (0, 0)
             elif self.position == OverlayPosition.LEFTBOT:
-                combined_rect.bottomleft = (0, screen.get_height())
+                combined_rect.bottomleft = (0, screen.get_height() - padding)
             elif self.position == OverlayPosition.RIGHTBOT:
-                combined_rect.bottomright = (screen.get_width(), screen.get_height())
+                combined_rect.bottomright = (screen.get_width() - padding, screen.get_height() - padding)
         else:
             combined_rect.topleft = self.position
 
         # Add padding for border
-        padding = self.border_width * 2 if self.border_color is not None else 0
         combined_rect.width += padding
         combined_rect.height += padding
 
