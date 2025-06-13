@@ -111,8 +111,9 @@ class Points(Drawable):
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
         draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
+        screen_size = np.array(screen.get_size(), dtype=np.int32)
 
         # filter out invalid positions
         screen_points = coordinate_system.space_to_screen(self._points.T).T

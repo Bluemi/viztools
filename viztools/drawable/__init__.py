@@ -11,7 +11,7 @@ Color = np.ndarray | Tuple[int, int, int, int] | Tuple[int, int, int]
 
 class Drawable(ABC):
     @abstractmethod
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
         pass
 
 
@@ -21,5 +21,3 @@ def _normalize_color(color: Color) -> np.ndarray:
     if len(color) != 4:
         raise ValueError(f'color must be of length 3 or 4, not {len(color)}.')
     return np.array(color, dtype=np.float32)
-
-

@@ -3,6 +3,7 @@
 import pygame as pg
 import numpy as np
 
+from viztools.drawable.overlay_text import OverlayText, OverlayPosition
 from viztools.drawable.points import Points
 from viztools.viewer import Viewer
 
@@ -21,10 +22,15 @@ class SimpleViewer(Viewer):
         # 1 - hovered
         # 2 - clicked
         self.point_type: np.ndarray = np.zeros(len(self.points), dtype=np.int8)
+        self.overlay_text = OverlayText(
+            'This is short\n' + 'This is some longer text\n' * 20, OverlayPosition.RIGHTTOP,
+            background_color=np.array([50, 50, 50, 128]),
+            border_color=np.array([80, 80, 80, 128]),
+        )
 
     def render(self):
         self.render_coordinate_system()
-        self.render_drawables([self.points])
+        self.render_drawables([self.points, self.overlay_text])
 
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)

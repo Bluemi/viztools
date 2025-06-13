@@ -9,10 +9,7 @@ from viztools.drawable import Drawable
 
 
 class Viewer(ABC):
-    def __init__(
-            self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16,
-            title: str = "Viewer",
-    ):
+    def __init__(self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16):
         pg.init()
         pg.key.set_repeat(130, 25)
 
@@ -53,7 +50,7 @@ class Viewer(ABC):
 
     def render_drawables(self, drawables: List[Drawable]):
         for drawable in drawables:
-            drawable.draw(self.screen, self.coordinate_system, np.array(self.screen.get_size()))
+            drawable.draw(self.screen, self.coordinate_system)
 
     def render_coordinate_system(self):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_font)
