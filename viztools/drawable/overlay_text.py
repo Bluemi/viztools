@@ -1,3 +1,4 @@
+import os
 from enum import StrEnum
 
 import pygame as pg
@@ -27,7 +28,11 @@ class OverlayText(Drawable):
         super().__init__()
         self.text = text
         self.position = position
-        font_name = font_name or pg.font.get_default_font()
+        if font_name:
+            if not os.path.isfile(font_name):
+                font_name = pg.font.match_font(font_name)
+        else:
+            font_name = pg.font.get_default_font()
         self.font = pg.font.Font(font_name, font_size)
         self.background_color = background_color
         self.border_color = border_color
