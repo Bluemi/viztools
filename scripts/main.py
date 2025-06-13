@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 
-from viztools.drawable import Points
+from viztools.drawable.points import Points
 from viztools.render_backend import BackendType
 from viztools.render_backend.events import Event
 from viztools.viewer import Viewer

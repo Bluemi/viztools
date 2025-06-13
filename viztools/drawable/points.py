@@ -1,31 +1,11 @@
-from abc import ABC, abstractmethod
-from typing import Tuple, Dict, Iterable
+from typing import Iterable, Tuple, Dict
 
-import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.render_backend.base_render_backend import Surface, RenderBackend
+from viztools.drawable import Drawable, _normalize_color
+from viztools.render_backend.base_render_backend import RenderBackend, Surface
 from viztools.render_backend.events import Event, EventType
-
-Color = np.ndarray | Tuple[int, int, int, int] | Tuple[int, int, int]
-
-
-class Drawable(ABC):
-    @abstractmethod
-    def draw(
-            self, screen: Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray,
-            render_backend: RenderBackend
-    ):
-        pass
-
-
-def _normalize_color(color: Color) -> np.ndarray:
-    if len(color) == 3:
-        return np.array([*color, 255], dtype=np.float32)
-    if len(color) != 4:
-        raise ValueError(f'color must be of length 3 or 4, not {len(color)}.')
-    return np.array(color, dtype=np.float32)
 
 
 class Points(Drawable):
@@ -186,20 +166,3 @@ def _get_valid_positions(screen_points: np.ndarray, draw_sizes: np.ndarray, scre
         np.logical_and(screen_points[:, 0] > -draw_sizes, (screen_points[:, 0] < screen_size[0] + draw_sizes)),
         np.logical_and(screen_points[:, 1] > -draw_sizes, (screen_points[:, 1] < screen_size[1] + draw_sizes))
     ))[0]
-
-
-def to_draw_positions(
-        points: np.ndarray, coordinate_system: CoordinateSystem, valid_positions: np.ndarray
-) -> np.ndarray:
-    """
-    Converts a list of points to a list of positions to draw them on the screen.
-    Filters out points outside the screen.
-
-    :param points: Numpy array of shape [N, 2] where N is the number of points.
-    :param coordinate_system: The coordinate system to use.
-    :param valid_positions: Array with shape [N], where N is the number of points. This array contains booleans
-                            indicating whether the point is visible on the screen.
-    :return: Numpy array with shape [K, 2] where K is the number of valid points that are visible on the screen.
-    """
-    screen_points = coordinate_system.space_to_screen(points.T).T
-    return screen_points[valid_positions].astype(int)
