@@ -17,25 +17,12 @@ class EventType(StrEnum):
 
 
 class Event:
-    def __init__(self, event_type: EventType):
+    def __init__(
+            self, event_type: EventType, mouse_pos: np.ndarray | None = None, mouse_rel: np.ndarray | None = None,
+            scroll: int | None = None, button: int | None = None,
+    ):
         self.type = event_type
-
-
-class MouseMotionEvent(Event):
-    def __init__(self, pos: np.ndarray, rel: np.ndarray):
-        super().__init__(EventType.MOUSEMOTION)
-        self.pos = pos
-        self.rel = rel
-
-
-class MouseWheelEvent(Event):
-    def __init__(self, scroll: int):
-        super().__init__(EventType.MOUSEWHEEL)
+        self.mouse_pos = mouse_pos
+        self.mouse_rel = mouse_rel
         self.scroll = scroll
-
-
-class MouseButtonDownEvent(Event):
-    def __init__(self, button: int, pos: np.ndarray):
-        super().__init__(EventType.MOUSEBUTTONDOWN)
         self.button = button
-        self.pos = pos

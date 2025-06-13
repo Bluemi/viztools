@@ -8,7 +8,7 @@ from viztools.viewer import Viewer
 
 class SimpleViewer(Viewer):
     def __init__(self):
-        super().__init__(backend_type=BackendType.OPENGL)
+        super().__init__(backend_type=BackendType.PYGAME)
         self.points = Points(
             np.random.normal(size=(200000, 2)) * 5,
             # np.array([[0, 0], [1, 1], [-1, 2]]),

@@ -8,7 +8,7 @@ import OpenGL.GLU
 import OpenGL.GLUT
 
 from .base_render_backend import RenderBackend, Surface, Font
-from .events import Event, MouseMotionEvent, MouseWheelEvent, MouseButtonDownEvent, EventType
+from .events import Event, EventType
 
 
 class OpenglFont(Font):

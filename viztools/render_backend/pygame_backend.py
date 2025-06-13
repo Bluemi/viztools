@@ -4,7 +4,7 @@ import numpy as np
 import pygame as pg
 
 from .base_render_backend import RenderBackend, Surface, Font
-from .events import Event, MouseMotionEvent, MouseWheelEvent, MouseButtonDownEvent, EventType
+from .events import Event, EventType
 
 
 class PygameFont(Font):
@@ -77,11 +77,19 @@ def _map_event(event: pg.event.Event) -> Event | None:
     elif event.type == pg.KEYUP:
         return Event(EventType.KEYUP)
     elif event.type == pg.MOUSEBUTTONDOWN:
-        return MouseButtonDownEvent(event.button, event.pos)
+        return Event(
+            EventType.MOUSEBUTTONDOWN,
+            button=event.button,
+            mouse_pos=np.array(event.pos, dtype=np.int32)
+        )
     elif event.type == pg.MOUSEBUTTONUP:
         return Event(EventType.MOUSEBUTTONUP)
     elif event.type == pg.MOUSEMOTION:
-        return MouseMotionEvent(event.pos, event.rel)
+        return Event(
+            EventType.MOUSEMOTION,
+            mouse_pos=np.array(event.pos, dtype=np.int32),
+            mouse_rel=np.array(event.rel, dtype=np.int32)
+        )
     elif event.type == pg.WINDOWENTER:
         return Event(EventType.WINDOWENTER)
     elif event.type == pg.WINDOWFOCUSGAINED:
@@ -89,6 +97,6 @@ def _map_event(event: pg.event.Event) -> Event | None:
     elif event.type == pg.WINDOWRESIZED:
         return Event(EventType.WINDOWRESIZED)
     elif event.type == pg.MOUSEWHEEL:
-        return MouseWheelEvent(event.y)
+        return Event(EventType.MOUSEWHEEL, scroll=event.y)
     else:
         return None

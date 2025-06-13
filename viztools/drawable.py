@@ -166,7 +166,7 @@ class Points(Drawable):
         if event.type == EventType.MOUSEBUTTONDOWN and event.button == 1:
             draw_size = self._get_draw_sizes(coordinate_system.zoom_factor)
 
-            screen_pos = np.array(event.pos).reshape(1, 2)
+            screen_pos = event.mouse_pos.reshape(1, 2)
             screen_points = coordinate_system.space_to_screen(self._points.T).T
             distances = np.linalg.norm(screen_points - screen_pos, axis=1)
             return np.nonzero(distances < draw_size)[0]

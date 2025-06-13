@@ -4,7 +4,7 @@ import numbers
 import numpy as np
 
 from viztools.render_backend.base_render_backend import Surface, Font
-from viztools.render_backend.events import EventType
+from viztools.render_backend.events import EventType, Event
 from viztools.utils import to_np_array
 
 
@@ -77,7 +77,7 @@ class CoordinateSystem:
     def update_inv(self):
         self.inverse_coord = np.linalg.pinv(self.coord)
 
-    def handle_event(self, event) -> bool:
+    def handle_event(self, event: Event) -> bool:
         """
 
         :param event:
@@ -91,9 +91,9 @@ class CoordinateSystem:
             self.dragging = False
             render_needed = True
         elif event.type == EventType.MOUSEMOTION:
-            self.mouse_position = np.array(event.pos, dtype=int)
+            self.mouse_position = event.mouse_pos
             if self.dragging:
-                self.translate(np.array(event.rel))
+                self.translate(event.mouse_rel)
                 render_needed = True
         elif event.type == EventType.MOUSEWHEEL:
             if event.scroll < 0:
