@@ -9,6 +9,7 @@ try:
     import OpenGL.GLUT
 except ImportError:
     warnings.warn('OpenGL module not found, OpenGL backend will not be available.')
+    OpenGL = None
 
 from .base_render_backend import RenderBackend, Surface, Font
 from .events import Event, EventType

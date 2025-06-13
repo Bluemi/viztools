@@ -32,7 +32,7 @@ class Viewer(ABC):
         self.framerate = framerate
 
         screen_size = screen_size or DEFAULT_SCREEN_SIZE
-        self.screen = self.render_backend.create_window(title)
+        self.screen = self.render_backend.create_window(title, size=screen_size)
 
         self.coordinate_system = CoordinateSystem(screen_size)
 
