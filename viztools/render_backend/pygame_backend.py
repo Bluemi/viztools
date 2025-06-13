@@ -68,6 +68,9 @@ class PygameBackend(RenderBackend):
         events = [_map_event(e) for e in pg.event.get()]
         return [e for e in events if e is not None]
 
+    def get_mouse_pos(self) -> np.ndarray:
+        return np.array(pg.mouse.get_pos(), dtype=np.int32)
+
 
 def _map_event(event: pg.event.Event) -> Event | None:
     if event.type == pg.QUIT:

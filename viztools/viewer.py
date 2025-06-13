@@ -30,6 +30,7 @@ class Viewer(ABC):
         self.render_needed = True
         self.clock = pg.time.Clock()
         self.framerate = framerate
+        self.mouse_pos = self.render_backend.get_mouse_pos()
 
         screen_size = screen_size or DEFAULT_SCREEN_SIZE
         self.screen = self.render_backend.create_window(title, size=screen_size)
@@ -76,6 +77,8 @@ class Viewer(ABC):
     def handle_event(self, event: Event):
         if self.coordinate_system.handle_event(event):
             self.render_needed = True
+        if event.type == EventType.MOUSEMOTION:
+            self.mouse_pos = np.array(event.mouse_pos)
         if event.type == EventType.QUIT:
             self.running = False
         if event.type in (EventType.WINDOWENTER, EventType.WINDOWFOCUSGAINED, EventType.WINDOWRESIZED):

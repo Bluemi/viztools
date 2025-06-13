@@ -78,3 +78,7 @@ class RenderBackend(ABC):
     @abstractmethod
     def get_events(self) -> List[Event]:
         pass
+
+    @abstractmethod
+    def get_mouse_pos(self) -> np.ndarray:
+        pass

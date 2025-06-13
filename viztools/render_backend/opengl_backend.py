@@ -97,3 +97,6 @@ class OpenglBackend(RenderBackend):
             event = Event(EventType.QUIT)  # Placeholder
             events.append(event)
         return events
+
+    def get_mouse_pos(self) -> np.ndarray:
+        raise NotImplementedError()

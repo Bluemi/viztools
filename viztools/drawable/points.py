@@ -144,13 +144,16 @@ class Points(Drawable):
         :param coordinate_system: The coordinate system to use.
         """
         if event.type == EventType.MOUSEBUTTONDOWN and event.button == 1:
-            draw_size = self._get_draw_sizes(coordinate_system.zoom_factor)
-
-            screen_pos = event.mouse_pos.reshape(1, 2)
-            screen_points = coordinate_system.space_to_screen(self._points.T).T
-            distances = np.linalg.norm(screen_points - screen_pos, axis=1)
-            return np.nonzero(distances < draw_size)[0]
+            return self.hovered_points(event.mouse_pos, coordinate_system)
         return np.array([])
+
+    def hovered_points(self, mouse_pos: np.ndarray, coordinate_system: CoordinateSystem) -> np.ndarray:
+        draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
+
+        screen_pos = mouse_pos.reshape(1, 2)
+        screen_points = coordinate_system.space_to_screen(self._points.T).T
+        distances = np.linalg.norm(screen_points - screen_pos, axis=1)
+        return np.nonzero(distances < draw_sizes)[0]
 
 
 def _get_draw_size(
