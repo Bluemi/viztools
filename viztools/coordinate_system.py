@@ -1,10 +1,9 @@
 from typing import Tuple
 import numbers
 
+import pygame as pg
 import numpy as np
 
-from viztools.render_backend.base_render_backend import Surface, Font
-from viztools.render_backend.events import EventType, Event
 from viztools.utils import to_np_array
 
 
@@ -77,26 +76,26 @@ class CoordinateSystem:
     def update_inv(self):
         self.inverse_coord = np.linalg.pinv(self.coord)
 
-    def handle_event(self, event: Event) -> bool:
+    def handle_event(self, event: pg.event.Event) -> bool:
         """
 
         :param event:
         :return:
         """
         render_needed = False
-        if event.type == EventType.MOUSEBUTTONDOWN:
+        if event.type == pg.MOUSEBUTTONDOWN:
             self.dragging = True
             render_needed = True
-        elif event.type == EventType.MOUSEBUTTONUP:
+        elif event.type == pg.MOUSEBUTTONUP:
             self.dragging = False
             render_needed = True
-        elif event.type == EventType.MOUSEMOTION:
-            self.mouse_position = event.mouse_pos
+        elif event.type == pg.MOUSEMOTION:
+            self.mouse_position = np.array(event.pos, dtype=np.int32)
             if self.dragging:
-                self.translate(event.mouse_rel)
+                self.translate(np.array(event.rel, dtype=np.int32))
                 render_needed = True
-        elif event.type == EventType.MOUSEWHEEL:
-            if event.scroll < 0:
+        elif event.type == pg.MOUSEWHEEL:
+            if event.y < 0:
                 self.zoom_out(focus_point=self.mouse_position)
                 render_needed = True
             else:
@@ -164,8 +163,8 @@ def create_affine_transformation(
     return translate_coord @ scale_coord
 
 
-def draw_coordinate_system(screen: Surface, coordinate_system: CoordinateSystem, render_font: Font):
-    screen.fill(np.array([0, 0, 0]))
+def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSystem, render_font: pg.font.Font):
+    screen.fill((0, 0, 0))
 
     def adapt_quotient(quotient):
         if quotient <= 0:
@@ -203,7 +202,7 @@ def draw_coordinate_system(screen: Surface, coordinate_system: CoordinateSystem,
         color = np.array([30, 30, 30])
         if x == 0:
             color = np.array([50, 50, 50])
-        screen.line(color, transformed_vertical_lines[0], transformed_vertical_lines[1])
+        pg.draw.line(screen, color, transformed_vertical_lines[0], transformed_vertical_lines[1])
 
     y_minimum = np.round(extreme_points[1, 1] / dividend) * dividend
     y_maximum = np.round(extreme_points[0, 1] / dividend) * dividend
@@ -216,7 +215,7 @@ def draw_coordinate_system(screen: Surface, coordinate_system: CoordinateSystem,
         color = np.array([30, 30, 30])
         if y == 0:
             color = np.array([50, 50, 50])
-        screen.line(color, transformed_horizontal_lines[0], transformed_horizontal_lines[1])
+        pg.draw.line(screen, color, transformed_horizontal_lines[0], transformed_horizontal_lines[1])
 
     # draw numbers
     zero_point = coordinate_system.space_to_screen(np.array([0, 0]))
@@ -226,7 +225,7 @@ def draw_coordinate_system(screen: Surface, coordinate_system: CoordinateSystem,
             if abs(x) > 10 ** -5:
                 float_format = '{:.2f}' if abs(x) > 1 else '{:.2}'
                 font = render_font.render(
-                    float_format.format(x), np.array([120, 120, 120]), True, np.array([0, 0, 0, 0])
+                    float_format.format(x), True, np.array([120, 120, 120]), np.array([0, 0, 0, 0])
                 )
                 pos = coordinate_system.space_to_screen(np.array([x, 0]))
                 pos += 10
@@ -239,7 +238,7 @@ def draw_coordinate_system(screen: Surface, coordinate_system: CoordinateSystem,
             if abs(y) > 10 ** -5:
                 float_format = '{:.2f}' if abs(y) > 1 else '{:.2}'
                 font = render_font.render(
-                    float_format.format(y), np.array([120, 120, 120]), True, np.array([0, 0, 0, 0])
+                    float_format.format(y), True, np.array([120, 120, 120]), np.array([0, 0, 0, 0])
                 )
                 pos = coordinate_system.space_to_screen(np.array([0, y]))
                 pos += 10

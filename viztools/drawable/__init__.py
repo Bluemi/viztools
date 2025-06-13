@@ -1,20 +1,17 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
+import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.render_backend.base_render_backend import Surface, RenderBackend
 
 Color = np.ndarray | Tuple[int, int, int, int] | Tuple[int, int, int]
 
 
 class Drawable(ABC):
     @abstractmethod
-    def draw(
-            self, screen: Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray,
-            render_backend: RenderBackend
-    ):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
         pass
 
 

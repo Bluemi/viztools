@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
+
+import pygame as pg
 import numpy as np
 
 from viztools.drawable.points import Points
-from viztools.render_backend import BackendType
-from viztools.render_backend.events import Event, EventType
 from viztools.viewer import Viewer
 
 class SimpleViewer(Viewer):
     def __init__(self):
-        super().__init__(backend_type=BackendType.PYGAME)
+        super().__init__()
         self.points = Points(
             np.random.normal(size=(200000, 2)) * 5,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
@@ -26,9 +26,9 @@ class SimpleViewer(Viewer):
         self.render_coordinate_system()
         self.render_drawables([self.points])
 
-    def handle_event(self, event: Event):
+    def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
-        if event.type == EventType.MOUSEMOTION:
+        if event.type == pg.MOUSEMOTION:
             clicked_indices = np.nonzero(self.point_type == 2)[0]
             old_hovered = np.nonzero(self.point_type == 1)[0]
             hovered_indices = self.points.hovered_points(self.mouse_pos, self.coordinate_system)
@@ -42,7 +42,7 @@ class SimpleViewer(Viewer):
                     self.points.set_color(np.array([0, 255, 0, 100]), hi)
                 self.render_needed = True
 
-        if event.type == EventType.MOUSEBUTTONDOWN:
+        if event.type == pg.MOUSEBUTTONDOWN:
             old_clicked = np.nonzero(self.point_type == 2)[0]
             self.point_type[old_clicked] = 0
             for p_index in old_clicked:

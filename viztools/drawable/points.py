@@ -1,11 +1,10 @@
 from typing import Iterable, Tuple, Dict
 
+import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
 from viztools.drawable import Drawable, _normalize_color
-from viztools.render_backend.base_render_backend import RenderBackend, Surface
-from viztools.render_backend.events import Event, EventType
 
 
 class Points(Drawable):
@@ -87,15 +86,15 @@ class Points(Drawable):
         self._size[index, 1] = isinstance(size, float)
         self._update_surf_params(index)
 
-    def _create_point_surfaces(self, render_backend: RenderBackend, zoom_factor: float) -> Dict[bytes, Surface]:
+    def _create_point_surfaces(self, zoom_factor: float) -> Dict[bytes, pg.Surface]:
         surfaces = {}
         for k, surf_params in self._surface_parameters.items():
             draw_size = _get_draw_size(surf_params[0], zoom_factor, bool(surf_params[1]))
             color = surf_params[2:]
 
             # old version with per pixel alpha
-            point_surface = render_backend.create_surface((draw_size * 2, draw_size * 2), enable_alpha=True)
-            point_surface.circle(color, (draw_size, draw_size), draw_size)
+            point_surface = pg.Surface((draw_size * 2, draw_size * 2), pg.SRCALPHA)
+            pg.draw.circle(point_surface, color, (draw_size, draw_size), draw_size)
 
             surfaces[k] = point_surface
         return surfaces
@@ -112,10 +111,7 @@ class Points(Drawable):
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
-    def draw(
-            self, screen: Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray,
-            render_backend: RenderBackend
-    ):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, screen_size: np.ndarray):
         draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
 
         # filter out invalid positions
@@ -127,7 +123,7 @@ class Points(Drawable):
         screen_points -= valid_sizes.reshape(-1, 1)
 
         # create blit surfaces
-        surfaces = self._create_point_surfaces(render_backend, coordinate_system.zoom_factor)
+        surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
 
         # draw
         for pos, size, color, surf_params in zip(
@@ -136,15 +132,15 @@ class Points(Drawable):
             surface = surfaces[surf_params.tobytes()]
             screen.blit(surface, pos)
 
-    def clicked_points(self, event: Event, coordinate_system: CoordinateSystem) -> np.ndarray:
+    def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
         Returns the indices of the points clicked by the mouse. Returns an empty array if no point was clicked.
 
         :param event: The event to check.
         :param coordinate_system: The coordinate system to use.
         """
-        if event.type == EventType.MOUSEBUTTONDOWN and event.button == 1:
-            return self.hovered_points(event.mouse_pos, coordinate_system)
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            return self.hovered_points(np.array(event.pos, dtype=np.int32), coordinate_system)
         return np.array([])
 
     def hovered_points(self, mouse_pos: np.ndarray, coordinate_system: CoordinateSystem) -> np.ndarray:
