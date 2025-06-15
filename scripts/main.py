@@ -40,8 +40,8 @@ class SimpleViewer(Viewer):
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
         if event.type == pg.MOUSEMOTION:
-            clicked_indices = np.nonzero(self.point_type == 2)[0]
-            old_hovered = np.nonzero(self.point_type == 1)[0]
+            clicked_indices = np.nonzero(np.equal(self.point_type, 2))[0]
+            old_hovered = np.nonzero(np.equal(self.point_type, 1))[0]
             hovered_indices = self.points.hovered_points(self.mouse_pos, self.coordinate_system)
             hovered_indices = np.setdiff1d(hovered_indices, clicked_indices)
             if not np.array_equal(old_hovered, hovered_indices):
@@ -54,7 +54,7 @@ class SimpleViewer(Viewer):
                 self.render_needed = True
 
         if event.type == pg.MOUSEBUTTONDOWN:
-            old_clicked = np.nonzero(self.point_type == 2)[0]
+            old_clicked = np.nonzero(np.equal(self.point_type, 2))[0]
             self.point_type[old_clicked] = 0
             for p_index in old_clicked:
                 self.points.set_color(np.array([0, 255, 0, 50]), p_index)
