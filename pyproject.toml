@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viztools"
-version = "0.3.5"
+version = "0.3.6"
 description = "Interactively visualize data using pygame."
 authors = [
     { name="Bruno Schilling", email="bruno.schilling@protonmail.ch" }
