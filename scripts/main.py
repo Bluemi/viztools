@@ -3,7 +3,7 @@
 import pygame as pg
 import numpy as np
 
-from viztools.drawable.overlay_text import OverlayText, OverlayPosition
+from viztools.drawable.overlay_text import OverlayText
 from viztools.drawable.points import Points
 from viztools.viewer import Viewer
 
@@ -34,7 +34,7 @@ class SimpleViewer(Viewer):
         )
 
     def render(self):
-        self.render_coordinate_system()
+        self.render_coordinate_system(draw_numbers=False)
         self.render_drawables([self.points, self.overlay_text])
 
     def handle_event(self, event: pg.event.Event):

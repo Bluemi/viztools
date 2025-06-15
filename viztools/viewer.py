@@ -52,8 +52,8 @@ class Viewer(ABC):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system)
 
-    def render_coordinate_system(self):
-        draw_coordinate_system(self.screen, self.coordinate_system, self.render_font)
+    def render_coordinate_system(self, draw_numbers=True):
+        draw_coordinate_system(self.screen, self.coordinate_system, self.render_font, draw_numbers=draw_numbers)
 
     def _render(self):
         self.render()

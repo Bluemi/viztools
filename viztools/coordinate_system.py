@@ -163,7 +163,9 @@ def create_affine_transformation(
     return translate_coord @ scale_coord
 
 
-def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSystem, render_font: pg.font.Font):
+def draw_coordinate_system(
+        screen: pg.Surface, coordinate_system: CoordinateSystem, render_font: pg.font.Font, draw_numbers=True
+):
     screen.fill((0, 0, 0))
 
     def adapt_quotient(quotient):
@@ -218,30 +220,31 @@ def draw_coordinate_system(screen: pg.Surface, coordinate_system: CoordinateSyst
         pg.draw.line(screen, color, transformed_horizontal_lines[0], transformed_horizontal_lines[1])
 
     # draw numbers
-    zero_point = coordinate_system.space_to_screen(np.array([0, 0]))
+    if draw_numbers:
+        zero_point = coordinate_system.space_to_screen(np.array([0, 0]))
 
-    if 0 < zero_point[1] < height:
-        for x in x_points:
-            if abs(x) > 10 ** -5:
-                float_format = '{:.2f}' if abs(x) > 1 else '{:.2}'
-                font = render_font.render(
-                    float_format.format(x), True, np.array([120, 120, 120]), np.array([0, 0, 0, 0])
-                )
-                pos = coordinate_system.space_to_screen(np.array([x, 0]))
-                pos += 10
-                # noinspection PyTypeChecker
-                render_pos: Tuple[int, int] = tuple(pos.flatten().tolist())
-                screen.blit(font, render_pos)
+        if 0 < zero_point[1] < height:
+            for x in x_points:
+                if abs(x) > 10 ** -5:
+                    float_format = '{:.2f}' if abs(x) > 1 else '{:.2}'
+                    font = render_font.render(
+                        float_format.format(x), True, np.array([120, 120, 120]), np.array([0, 0, 0, 0])
+                    )
+                    pos = coordinate_system.space_to_screen(np.array([x, 0]))
+                    pos += 10
+                    # noinspection PyTypeChecker
+                    render_pos: Tuple[int, int] = tuple(pos.flatten().tolist())
+                    screen.blit(font, render_pos)
 
-    if 0 < zero_point[0] < width:
-        for y in y_points:
-            if abs(y) > 10 ** -5:
-                float_format = '{:.2f}' if abs(y) > 1 else '{:.2}'
-                font = render_font.render(
-                    float_format.format(y), True, np.array([120, 120, 120]), np.array([0, 0, 0, 0])
-                )
-                pos = coordinate_system.space_to_screen(np.array([0, y]))
-                pos += 10
-                # noinspection PyTypeChecker
-                render_pos: Tuple[int, int] = tuple(pos.flatten().tolist())
-                screen.blit(font, render_pos)
+        if 0 < zero_point[0] < width:
+            for y in y_points:
+                if abs(y) > 10 ** -5:
+                    float_format = '{:.2f}' if abs(y) > 1 else '{:.2}'
+                    font = render_font.render(
+                        float_format.format(y), True, np.array([120, 120, 120]), np.array([0, 0, 0, 0])
+                    )
+                    pos = coordinate_system.space_to_screen(np.array([0, y]))
+                    pos += 10
+                    # noinspection PyTypeChecker
+                    render_pos: Tuple[int, int] = tuple(pos.flatten().tolist())
+                    screen.blit(font, render_pos)
