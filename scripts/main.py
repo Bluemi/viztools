@@ -10,10 +10,11 @@ from viztools.viewer import Viewer
 class SimpleViewer(Viewer):
     def __init__(self):
         super().__init__()
+        num_points = 50000
         self.points = Points(
-            np.random.normal(size=(200000, 2)) * 5,
+            np.random.normal(size=(num_points, 2)) * 5,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
-            size=np.random.randint(1, 5, size=200000) ** 2 / 250,
+            size=np.random.randint(1, 5, size=num_points) ** 2 / 250,
             # size=5,
             color=np.array([0, 255, 0, 50])
         )
@@ -23,8 +24,12 @@ class SimpleViewer(Viewer):
         # 2 - clicked
         self.point_type: np.ndarray = np.zeros(len(self.points), dtype=np.int8)
         self.overlay_text = OverlayText(
-            'This is short\n' + 'This is some longer text\n' * 20, OverlayPosition.BOT,
-            background_color=np.array([50, 50, 50, 128]),
+            # 'This is short\n' + 'This is some longer text\n' * 20,
+            'Label',
+            np.array([0.5, 0.5]),
+            font_size=0.1,
+            color=np.array([128, 128, 128]),
+            # background_color=np.array([50, 50, 50, 128]),
             border_color=np.array([80, 80, 80, 128]),
         )
 
