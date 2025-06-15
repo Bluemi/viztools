@@ -54,16 +54,23 @@ class SimpleViewer(Viewer):
                 self.render_needed = True
 
         if event.type == pg.MOUSEBUTTONDOWN:
-            old_clicked = np.nonzero(np.equal(self.point_type, 2))[0]
-            self.point_type[old_clicked] = 0
-            for p_index in old_clicked:
-                self.points.set_color(np.array([0, 255, 0, 50]), p_index)
+            if event.button == 1:
+                old_clicked = np.nonzero(np.equal(self.point_type, 2))[0]
+                self.point_type[old_clicked] = 0
+                for p_index in old_clicked:
+                    self.points.set_color(np.array([0, 255, 0, 50]), p_index)
 
-            clicked_indices = self.points.clicked_points(event, self.coordinate_system)
-            if len(clicked_indices) > 0:
-                self.point_type[clicked_indices] = 2
-                for p_index in clicked_indices:
-                    self.points.set_color(np.array([255, 0, 0, 50]), p_index)
+                # clicked_indices = self.points.clicked_points(event, self.coordinate_system)
+                # if len(clicked_indices) > 0:
+                #     self.point_type[clicked_indices] = 2
+                #     for p_index in clicked_indices:
+                #         self.points.set_color(np.array([255, 0, 0, 50]), p_index)
+
+                closest_point, dist = self.points.closest_point(self.mouse_pos, self.coordinate_system)
+                if dist < 10:
+                    self.point_type[closest_point] = 2
+                    self.points.set_color(np.array([255, 0, 0, 50]), closest_point)
+                self.render_needed = True
 
 
 def main():

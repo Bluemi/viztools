@@ -55,6 +55,15 @@ class CoordinateSystem:
         """
         return self.space_to_screen(np.array([0.0, 0.0]))
 
+    def space_to_screen_t(self, mat: np.ndarray):
+        """
+        Transform the given matrix with the internal coordinates.
+
+        :param mat: A list of column vectors with shape [N, 2]. For vectors shape should be [1, 2].
+        :return: A list of column vectors with shape [N, 2].
+        """
+        return self.space_to_screen(mat.T).T
+
     def space_to_screen(self, mat: np.ndarray) -> np.ndarray:
         """
         Transform the given matrix with the internal coordinates.
@@ -67,7 +76,21 @@ class CoordinateSystem:
             mat = mat.reshape(2, 1)
         return transform(self.coord, mat)
 
+    def screen_to_space_t(self, mat: np.ndarray) -> np.ndarray:
+        return self.screen_to_space(mat.T).T
+
     def screen_to_space(self, mat: np.ndarray):
+        """
+        Transform screen coordinates to space coordinates using the inverse
+        coordinate transformation matrix.
+
+        :param mat: Input matrix representing screen coordinates. It can be
+            either a 2D array or a 1D array with shape (2,).
+            If the shape is (2,), it will be reshaped to (2, 1).
+
+        :return: A transformed matrix in space coordinates based on the
+            inverse coordinate transformation matrix of the object.
+        """
         mat = to_np_array(mat)
         if mat.shape == (2,):
             mat = mat.reshape(2, 1)

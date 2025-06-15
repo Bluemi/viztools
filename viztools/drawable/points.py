@@ -116,7 +116,7 @@ class Points(Drawable):
         screen_size = np.array(screen.get_size(), dtype=np.int32)
 
         # filter out invalid positions
-        screen_points = coordinate_system.space_to_screen(self._points.T).T
+        screen_points = coordinate_system.space_to_screen_t(self._points)
         valid_positions = _get_valid_positions(screen_points, draw_sizes, screen_size)
         screen_points = screen_points[valid_positions]
         valid_colors = self._colors[valid_positions]
@@ -148,9 +148,35 @@ class Points(Drawable):
         draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
 
         screen_pos = mouse_pos.reshape(1, 2)
-        screen_points = coordinate_system.space_to_screen(self._points.T).T
+        screen_points = coordinate_system.space_to_screen_t(self._points)
         distances = np.linalg.norm(screen_points - screen_pos, axis=1)
         return np.nonzero(distances < draw_sizes)[0]
+
+    def closest_point(
+            self, pos: np.ndarray, coordinate_system: CoordinateSystem, dist_to_center: bool = False
+    ) -> Tuple[int, float]:
+        """
+        Finds the closest point to the given position.
+
+        This function calculates the closest point to a specified 2D position on
+        the screen.
+
+        :param pos: The 2D position in screen coordinates to calculate the distance from.
+        :param coordinate_system: The coordinate system used for transforming space
+                                  coordinates to screen coordinates.
+        :param dist_to_center: If False, the distance is calculated as the distance between the edge of point and <pos>.
+            If True, the distance is calculated as the distance between the center of the point and <pos>.
+        :return: A tuple containing the index of the closest point and the distance
+                 to that closest point.
+        :rtype: Tuple[int, float]
+        """
+        screen_pos = pos.reshape(1, 2)
+        screen_points = coordinate_system.space_to_screen_t(self._points)
+        distances = np.linalg.norm(screen_points - screen_pos, axis=1)
+        if not dist_to_center:
+            distances -= self._get_draw_sizes(coordinate_system.zoom_factor)
+        closest_index = np.argmin(distances)
+        return int(closest_index), max(float(distances[closest_index]), 0.0)
 
 
 def _get_draw_size(
