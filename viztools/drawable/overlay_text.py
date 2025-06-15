@@ -75,10 +75,9 @@ class OverlayText(Drawable):
         if isinstance(font_size, float):
             font_size = int(self.font_size * coordinate_system.zoom_factor)
         font = pg.font.Font(self.font_name, font_size)
-        line_surfaces = [font.render(line, True, self.color) for line in text_lines]
-        line_heights = [surface.get_height() for surface in line_surfaces]
-        total_height = sum(line_heights)
-        max_width = max(surface.get_width() for surface in line_surfaces)
+        line_dimensions = [font.size(line) for line in text_lines]
+        total_height = sum(d[1] for d in line_dimensions)
+        max_width = max(d[0] for d in line_dimensions)
 
         combined_rect = pg.Rect(0, 0, max_width, total_height)
         padding = self.border_width * 2 if self.border_color is not None else 0
@@ -111,6 +110,10 @@ class OverlayText(Drawable):
         combined_rect.width += padding
         combined_rect.height += padding
 
+        # skip if out of screen
+        if not combined_rect.colliderect(screen.get_rect()):
+            return
+
         if self.background_color is not None:
             background = pg.Surface(combined_rect.size, pg.SRCALPHA)
             background.fill(self.background_color)
@@ -122,6 +125,7 @@ class OverlayText(Drawable):
             screen.blit(border_surface, (0, 0))
 
         current_y = combined_rect.y + (padding // 2)
+        line_surfaces = [font.render(line, True, self.color) for line in text_lines]
         for surface in line_surfaces:
             line_rect = surface.get_rect()
             line_rect.centerx = combined_rect.centerx
