@@ -107,11 +107,13 @@ class CoordinateSystem:
         """
         render_needed = False
         if event.type == pg.MOUSEBUTTONDOWN:
-            self.dragging = True
-            render_needed = True
+            if event.button == 2:
+                self.dragging = True
+                render_needed = True
         elif event.type == pg.MOUSEBUTTONUP:
-            self.dragging = False
-            render_needed = True
+            if event.button == 2:
+                self.dragging = False
+                render_needed = True
         elif event.type == pg.MOUSEMOTION:
             self.mouse_position = np.array(event.pos, dtype=np.int32)
             if self.dragging:
