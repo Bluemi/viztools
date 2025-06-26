@@ -20,8 +20,6 @@ class CoordinateSystem:
         self.inverse_coord: np.ndarray = np.linalg.pinv(self.coord)
 
         # user control
-        self.dragging: bool = False
-        self.mouse_position = np.zeros(2, dtype=int)
         self.zoom_factor = 100
 
     def zoom_out(self, focus_point=None, scale=1.2):
@@ -98,35 +96,6 @@ class CoordinateSystem:
 
     def update_inv(self):
         self.inverse_coord = np.linalg.pinv(self.coord)
-
-    def handle_event(self, event: pg.event.Event) -> bool:
-        """
-
-        :param event:
-        :return:
-        """
-        render_needed = False
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 2:
-                self.dragging = True
-                render_needed = True
-        elif event.type == pg.MOUSEBUTTONUP:
-            if event.button == 2:
-                self.dragging = False
-                render_needed = True
-        elif event.type == pg.MOUSEMOTION:
-            self.mouse_position = np.array(event.pos, dtype=np.int32)
-            if self.dragging:
-                self.translate(np.array(event.rel, dtype=np.int32))
-                render_needed = True
-        elif event.type == pg.MOUSEWHEEL:
-            if event.y < 0:
-                self.zoom_out(focus_point=self.mouse_position)
-                render_needed = True
-            else:
-                self.zoom_in(focus_point=self.mouse_position)
-                render_needed = True
-        return render_needed
 
 
 def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False) -> np.ndarray:

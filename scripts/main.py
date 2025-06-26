@@ -7,6 +7,7 @@ from viztools.drawable.overlay_text import OverlayText
 from viztools.drawable.points import Points
 from viztools.viewer import Viewer
 
+
 class SimpleViewer(Viewer):
     def __init__(self):
         super().__init__()

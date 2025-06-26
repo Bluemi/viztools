@@ -4,6 +4,7 @@ from typing import Tuple, Optional, List
 import numpy as np
 import pygame as pg
 
+from viztools.controller.coordinate_system_controller import CoordinateSystemController
 from viztools.coordinate_system import CoordinateSystem, draw_coordinate_system
 from viztools.drawable import Drawable
 
@@ -27,6 +28,7 @@ class Viewer(ABC):
         self.screen = pg.display.set_mode(screen_size, mode)
 
         self.coordinate_system = CoordinateSystem(screen_size)
+        self.coordinate_system_controller = CoordinateSystemController(self.coordinate_system, drag_mouse_button=1)
 
         self.render_font = pg.font.Font(pg.font.get_default_font(), font_size)
 
@@ -66,7 +68,7 @@ class Viewer(ABC):
 
     @abstractmethod
     def handle_event(self, event: pg.event.Event):
-        if self.coordinate_system.handle_event(event):
+        if self.coordinate_system_controller.handle_event(event):
             self.render_needed = True
         if event.type == pg.MOUSEMOTION:
             self.mouse_pos = np.array(event.pos)
