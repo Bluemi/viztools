@@ -10,7 +10,10 @@ from viztools.drawable import Drawable
 
 
 class Viewer(ABC):
-    def __init__(self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16):
+    def __init__(
+            self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16,
+            drag_mouse_button: int = 2
+    ):
         pg.init()
         pg.key.set_repeat(130, 25)
 
@@ -28,7 +31,9 @@ class Viewer(ABC):
         self.screen = pg.display.set_mode(screen_size, mode)
 
         self.coordinate_system = CoordinateSystem(screen_size)
-        self.coordinate_system_controller = CoordinateSystemController(self.coordinate_system, drag_mouse_button=1)
+        self.coordinate_system_controller = CoordinateSystemController(
+            self.coordinate_system, drag_mouse_button=drag_mouse_button
+        )
 
         self.render_font = pg.font.Font(pg.font.get_default_font(), font_size)
 

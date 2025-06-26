@@ -10,7 +10,7 @@ from viztools.viewer import Viewer
 
 class SimpleViewer(Viewer):
     def __init__(self):
-        super().__init__()
+        super().__init__(drag_mouse_button=1)
         num_points = 50000
         self.points = Points(
             np.random.normal(size=(num_points, 2)) * 5,
