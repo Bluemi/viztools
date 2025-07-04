@@ -148,16 +148,18 @@ class Points(Drawable):
         self._update_chunks(coordinate_system, screen.get_size(), surfaces)
 
         # draw points in chunks
-        for chunk_x in range(self.current_chunks.shape()[0]):
-            for chunk_y in range(self.current_chunks.shape()[1]):
-                # noinspection PyTypeChecker
-                chunk_surface: Optional[pg.Surface] = self.current_chunks.surfaces[chunk_x, chunk_y]
-                if chunk_surface is not None:
-                    chunk_frame = self.current_chunks.chunk_frames[chunk_x, chunk_y]
-                    left_top = np.array([[chunk_frame[0], chunk_frame[1]]])
-                    left_top_screen = coordinate_system.space_to_screen_t(left_top)
-                    left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
-                    screen.blit(chunk_surface, left_top_screen)
+        viewport = coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen.get_size()]))
+        chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)
+        for chunk_index in chunk_indices:
+            chunk_x, chunk_y = self.current_chunks.chunk_index_tuple(chunk_index)
+            # noinspection PyTypeChecker
+            chunk_surface: Optional[pg.Surface] = self.current_chunks.surfaces[chunk_x, chunk_y]
+            if chunk_surface is not None:
+                chunk_frame = self.current_chunks.chunk_frames[chunk_x, chunk_y]
+                left_top = np.array([[chunk_frame[0], chunk_frame[1]]])
+                left_top_screen = coordinate_system.space_to_screen_t(left_top)
+                left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
+                screen.blit(chunk_surface, left_top_screen)
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
