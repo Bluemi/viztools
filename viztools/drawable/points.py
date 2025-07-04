@@ -73,7 +73,8 @@ class Points(Drawable):
         return len(self._points)
 
     def _build_chunk_grid(self, zoom_factor: float, chunk_size: int = 200) -> ChunkGrid:
-        return ChunkGrid.from_points(self._points, chunk_size / zoom_factor)
+        sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], zoom_factor)
+        return ChunkGrid.from_points(self._points, sizes, chunk_size / zoom_factor)
 
     def _get_surf_params(self) -> np.ndarray:
         return np.concatenate([self._size, self._colors], axis=1)
@@ -119,7 +120,10 @@ class Points(Drawable):
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
-    def _update_chunks(self, coordinate_system: CoordinateSystem, screen_size: Tuple[int, int]):
+    def _update_chunks(
+            self, coordinate_system: CoordinateSystem, screen_size: Tuple[int, int],
+            point_surfaces: Dict[bytes, pg.Surface]
+    ):
         if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
             self.current_chunks = None
             self.last_zoom_factor = coordinate_system.zoom_factor
@@ -131,55 +135,29 @@ class Points(Drawable):
         viewport = coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen_size]))
         update_index = self.current_chunks.get_next_update_chunk(viewport)
         if update_index is not None:
-            self.current_chunks.set_status(update_index, 2)
+            sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], coordinate_system.zoom_factor)
+            self.current_chunks.render_chunk(
+                update_index, self._points, sizes, self._colors,
+                self._get_surf_params(), coordinate_system.zoom_factor, point_surfaces
+            )
 
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
-        self._update_chunks(coordinate_system, screen.get_size())
-
-        draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
-        screen_size = np.array(screen.get_size(), dtype=np.int32)
-
-        # filter out invalid positions
-        screen_points = coordinate_system.space_to_screen_t(self._points)
-        valid_positions = _get_valid_positions(screen_points, draw_sizes, screen_size)
-        screen_points = screen_points[valid_positions]
-        valid_colors = self._colors[valid_positions]
-        valid_sizes = draw_sizes[valid_positions]
-        screen_points -= valid_sizes.reshape(-1, 1)
-
         # create blit surfaces
         surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
 
-        # draw
-        for pos, size, color, surf_params in zip(
-                screen_points, valid_sizes, valid_colors, self._get_surf_params()[valid_positions]
-        ):
-            surface = surfaces[surf_params.tobytes()]
-            screen.blit(surface, pos)
+        self._update_chunks(coordinate_system, screen.get_size(), surfaces)
 
-        # draw chunks
-        left_bot_chunk_pos = np.array([
-            self.current_chunks.left_bot,
-            self.current_chunks.left_bot + self.current_chunks.chunk_size
-        ])
+        # draw points in chunks
         for chunk_x in range(self.current_chunks.shape()[0]):
             for chunk_y in range(self.current_chunks.shape()[1]):
-                offset = np.array([chunk_x * self.current_chunks.chunk_size, chunk_y * self.current_chunks.chunk_size])
-                chunk_pos = left_bot_chunk_pos + offset.reshape(1, 2)
-                chunk_pos_screen = coordinate_system.space_to_screen_t(chunk_pos)
-                left = int(chunk_pos_screen[0, 0])
-                top = int(chunk_pos_screen[1, 1])
-                right = int(chunk_pos_screen[1, 0])
-                bottom = int(chunk_pos_screen[0, 1])
-                rect = pg.Rect(left, top, abs(right - left), abs(bottom - top))
-                status = self.current_chunks.status[chunk_x, chunk_y]
-                if status == 0:
-                    color = pg.Color(255, 0, 0)
-                elif status == 1:
-                    color = pg.Color(0, 255, 0)
-                else:
-                    color = pg.Color(0, 0, 255)
-                pg.draw.rect(screen, color, rect, 1)
+                # noinspection PyTypeChecker
+                chunk_surface: Optional[pg.Surface] = self.current_chunks.surfaces[chunk_x, chunk_y]
+                if chunk_surface is not None:
+                    chunk_frame = self.current_chunks.chunk_frames[chunk_x, chunk_y]
+                    left_top = np.array([[chunk_frame[0], chunk_frame[1]]])
+                    left_top_screen = coordinate_system.space_to_screen_t(left_top)
+                    left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
+                    screen.blit(chunk_surface, left_top_screen)
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
@@ -233,6 +211,21 @@ def _get_draw_size(
     if is_relative_size:
         size = max(int(size * zoom_factor), 1)
     return int(size)
+
+
+def _get_world_sizes(sizes: np.ndarray, is_relative: np.ndarray, zoom_factor: float) -> np.ndarray:
+    """
+    Converts sizes from screen or world sizes to world sizes.
+    :param sizes: Float array with shape [N,] where N is the number of sizes.
+    :param is_relative: Float array with shape [N,] where N is the number of sizes. 1.0 means relative size, 0.0 means
+    absolute size.
+    :param zoom_factor: The zoom factor. world_size = draw_size / zoom_factor
+    :return: For each index i, returns the world size for size[i]
+    """
+    is_absolute = is_relative < 0.5
+    world_sizes = sizes.copy()
+    world_sizes[is_absolute] /= zoom_factor
+    return world_sizes
 
 
 def _get_valid_positions(screen_points: np.ndarray, draw_sizes: np.ndarray, screen_size: np.ndarray) -> np.ndarray:

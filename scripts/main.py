@@ -11,15 +11,15 @@ from viztools.viewer import Viewer
 class SimpleViewer(Viewer):
     def __init__(self):
         super().__init__(drag_mouse_button=2)
-        num_points = 50000
-        positions = np.random.normal(size=(num_points, 2))
-        positions[:, 0] *= 5
-        positions[:, 1] *= 10
+        num_points = 100_000
+        positions = np.random.random(size=(num_points, 2))
+        positions[:, 0] *= 20
+        positions[:, 1] *= 40
         self.points = Points(
             positions,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
             # size=np.random.randint(1, 5, size=num_points) ** 2 / 250,
-            size=5,
+            size=0.05,
             color=np.array([0, 255, 0, 50])
         )
         # self.points = Points(
@@ -48,38 +48,38 @@ class SimpleViewer(Viewer):
 
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
-        if event.type == pg.MOUSEMOTION:
-            clicked_indices = np.nonzero(np.equal(self.point_type, 2))[0]
-            old_hovered = np.nonzero(np.equal(self.point_type, 1))[0]
-            hovered_indices = self.points.hovered_points(self.mouse_pos, self.coordinate_system)
-            hovered_indices = np.setdiff1d(hovered_indices, clicked_indices)
-            if not np.array_equal(old_hovered, hovered_indices):
-                self.point_type[old_hovered] = 0
-                self.point_type[hovered_indices] = np.maximum(1, self.point_type[hovered_indices])
-                for oh in old_hovered:
-                    self.points.set_color(np.array([0, 255, 0, 50]), oh)
-                for hi in hovered_indices:
-                    self.points.set_color(np.array([0, 255, 0, 100]), hi)
-                self.render_needed = True
+        # if event.type == pg.MOUSEMOTION:
+        #     clicked_indices = np.nonzero(np.equal(self.point_type, 2))[0]
+        #     old_hovered = np.nonzero(np.equal(self.point_type, 1))[0]
+        #     hovered_indices = self.points.hovered_points(self.mouse_pos, self.coordinate_system)
+        #     hovered_indices = np.setdiff1d(hovered_indices, clicked_indices)
+        #     if not np.array_equal(old_hovered, hovered_indices):
+        #         self.point_type[old_hovered] = 0
+        #         self.point_type[hovered_indices] = np.maximum(1, self.point_type[hovered_indices])
+        #         for oh in old_hovered:
+        #             self.points.set_color(np.array([0, 255, 0, 50]), oh)
+        #         for hi in hovered_indices:
+        #             self.points.set_color(np.array([0, 255, 0, 100]), hi)
+        #         self.render_needed = True
 
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                old_clicked = np.nonzero(np.equal(self.point_type, 2))[0]
-                self.point_type[old_clicked] = 0
-                for p_index in old_clicked:
-                    self.points.set_color(np.array([0, 255, 0, 50]), p_index)
+        # if event.type == pg.MOUSEBUTTONDOWN:
+        #     if event.button == 1:
+        #         old_clicked = np.nonzero(np.equal(self.point_type, 2))[0]
+        #         self.point_type[old_clicked] = 0
+        #         for p_index in old_clicked:
+        #             self.points.set_color(np.array([0, 255, 0, 50]), p_index)
 
-                # clicked_indices = self.points.clicked_points(event, self.coordinate_system)
-                # if len(clicked_indices) > 0:
-                #     self.point_type[clicked_indices] = 2
-                #     for p_index in clicked_indices:
-                #         self.points.set_color(np.array([255, 0, 0, 50]), p_index)
+        #         # clicked_indices = self.points.clicked_points(event, self.coordinate_system)
+        #         # if len(clicked_indices) > 0:
+        #         #     self.point_type[clicked_indices] = 2
+        #         #     for p_index in clicked_indices:
+        #         #         self.points.set_color(np.array([255, 0, 0, 50]), p_index)
 
-                closest_point, dist = self.points.closest_point(self.mouse_pos, self.coordinate_system)
-                if dist < 10:
-                    self.point_type[closest_point] = 2
-                    self.points.set_color(np.array([255, 0, 0, 50]), closest_point)
-                self.render_needed = True
+        #         closest_point, dist = self.points.closest_point(self.mouse_pos, self.coordinate_system)
+        #         if dist < 10:
+        #             self.point_type[closest_point] = 2
+        #             self.points.set_color(np.array([255, 0, 0, 50]), closest_point)
+        #         self.render_needed = True
 
 
 def main():

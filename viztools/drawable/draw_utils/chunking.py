@@ -1,12 +1,13 @@
-from typing import Self, Tuple, Optional
+from typing import Self, Tuple, Optional, Dict
 
 import numpy as np
+import pygame as pg
 
 
 class ChunkGrid:
     def __init__(
             self, surfaces: np.ndarray, point_chunk_indices: np.ndarray, chunk_point_indices: np.ndarray,
-            left_bot: np.ndarray, chunk_size: float
+            left_bot: np.ndarray, chunk_size: float, chunk_frames: np.ndarray,
     ):
         """
         Creates a new ChunkGrid object. This groups the given points into a grid of chunks with size (w, h).
@@ -17,11 +18,15 @@ class ChunkGrid:
         :param point_chunk_indices: A numpy array with shape n of type int. Accessing point_indices[i] gives the
         chunk_index of the ith point. Left bottom chunk has index 0, the next chunk to the top has index 1.
         The top right chunk as index h*w-1.
-        :param chunk_point_indices: A numpy array with shape (w, h) of type int. Accessing point_indices[x, y] gives
-        a numpy array of indices for points in the chunk at (x, y).
+        :param chunk_point_indices: A numpy array with shape (w, h).
+        Accessing chunk_point_indices[x, y] gives a numpy array of indices for points in the chunk at (x, y).
         :param left_bot: The world coordinates of the bottom left corner of the bottom left chunk as a numpy array with
         shape 2 of type float.
         :param chunk_size: The size of the chunks in world coordinates.
+        :param chunk_frames: A numpy array with shape (w, h, 4). Each entry[x, y] contains the
+        (left, top, right, bottom) world coordinates of the surrounding frame. The surrounding frame is the area, in
+        which all contained points can be fully rendered. If no points are contained in the chunk, the frame should be
+        zeros.
         """
         self.surfaces = surfaces
         self.point_chunk_indices = point_chunk_indices
@@ -33,6 +38,7 @@ class ChunkGrid:
         # - 1: has to update
         # - 2: ok
         self.status = np.zeros(surfaces.shape, dtype=np.int32)
+        self.chunk_frames = chunk_frames
 
     def shape(self) -> Tuple[int, int]:
         """
@@ -41,13 +47,14 @@ class ChunkGrid:
         return self.surfaces.shape
 
     @classmethod
-    def from_points(cls, points: np.ndarray, chunk_size: float) -> Self:
+    def from_points(cls, points: np.ndarray, sizes: np.ndarray, chunk_size: float) -> Self:
         """
         Create a grid of chunks from the given points. Each point is in exactly one chunk.
         Chunks are created in scanline order.
 
         :param points: The center positions of points in the coordinate system with shape (n, 2).
         Accessing points[i] gives the (x, y) position of point i.
+        :param sizes: The sizes of the points in the coordinate system with shape n.
         :param chunk_size: The maximum size of a chunk in world size.
         :return: A ChunkGrid object.
         """
@@ -79,7 +86,20 @@ class ChunkGrid:
                 cur_chunk = np.nonzero(np.equal(point_chunk_indices, current_chunk_index))[0]
                 chunks_point_indices[chunk_x, chunk_y] = cur_chunk
 
-        return ChunkGrid(surfaces, point_chunk_indices, chunks_point_indices, most_left_bot, chunk_size)
+        # building chunk frames
+        chunk_frames = np.zeros((*chunks_shape, 4))
+        for chunk_x in range(chunks_shape[0]):
+            for chunk_y in range(chunks_shape[1]):
+                point_indices = chunks_point_indices[chunk_x, chunk_y]
+                if point_indices.shape[0] != 0:
+                    point_positions = points[point_indices]
+                    point_sizes = sizes[point_indices].reshape(-1, 1)
+
+                    left_bot = np.min(point_positions - point_sizes, axis=0)
+                    right_top = np.max(point_positions + point_sizes, axis=0)
+                    chunk_frames[chunk_x, chunk_y] = (left_bot[0], right_top[1], right_top[0], left_bot[1])
+
+        return ChunkGrid(surfaces, point_chunk_indices, chunks_point_indices, most_left_bot, chunk_size, chunk_frames)
     
     def get_in_viewport_chunk_indices(self, viewport: np.ndarray) -> np.ndarray:
         """
@@ -123,4 +143,49 @@ class ChunkGrid:
         return int(chunk_indices[most_needed_index])
 
     def set_status(self, chunk_index: int, status: int):
-        self.status.flat[chunk_index] = status
+        self.status[self.chunk_index_tuple(chunk_index)] = status
+
+    def chunk_index_tuple(self, chunk_index: int) -> Tuple[int, int]:
+        s = self.shape()
+        return chunk_index // s[1], chunk_index % s[1]
+
+    def chunk_frame_size(self, chunk_index: int) -> Tuple[float, float]:
+        frame = self.chunk_frames[self.chunk_index_tuple(chunk_index)]
+        return abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
+
+    def render_chunk(
+            self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, colors: np.ndarray, surf_params: np.ndarray,
+            zoom_factor: float, point_surfaces: Dict[bytes, pg.Surface]
+    ):
+        """
+        Creates a surface for the given chunk
+        :param chunk_index:
+        """
+        chunk_index = self.chunk_index_tuple(chunk_index)
+
+        frame = self.chunk_frames[chunk_index]
+        left_bot = np.array([frame[0], frame[3]])
+        frame_size = abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
+        render_size = tuple(int(round(s * zoom_factor)) for s in frame_size)
+        surface = pg.Surface(render_size, pg.SRCALPHA)
+
+        point_indices = self.chunk_point_indices[chunk_index]
+        points = points[point_indices]
+        colors = colors[point_indices]
+        sizes = sizes[point_indices]
+        surf_params = surf_params[point_indices]
+
+        render_positions = points - left_bot.reshape(1, 2)
+        render_positions[:, 0] -= sizes
+        render_positions[:, 1] += sizes
+        render_positions *= zoom_factor
+        render_positions[:, 1] = render_size[1] - render_positions[:, 1]  # flip y-axis
+        render_positions = render_positions.round().astype(int)
+
+        for pos, size, color, surf_params in zip(render_positions, sizes, colors, surf_params):
+            point_surface = point_surfaces[surf_params.tobytes()]
+            # print('pos:', pos, render_size[1])
+            surface.blit(point_surface, pos)
+
+        self.status[chunk_index] = 2
+        self.surfaces[chunk_index] = surface
