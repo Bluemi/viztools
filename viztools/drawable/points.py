@@ -120,10 +120,9 @@ class Points(Drawable):
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
-    def _update_chunks(
-            self, coordinate_system: CoordinateSystem, screen_size: Tuple[int, int],
-            point_surfaces: Dict[bytes, pg.Surface]
-    ):
+    def update_chunks(self, coordinate_system: CoordinateSystem, screen_size: Tuple[int, int]) -> bool:
+        point_surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
+
         if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
             self.current_chunks = None
             self.last_zoom_factor = coordinate_system.zoom_factor
@@ -140,12 +139,14 @@ class Points(Drawable):
                 update_index, self._points, sizes, self._colors,
                 self._get_surf_params(), coordinate_system.zoom_factor, point_surfaces
             )
+            return True
+        return False
+
+    def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem) -> bool:
+        return self.update_chunks(coordinate_system, screen.get_size())
 
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
-        # create blit surfaces
-        surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
-
-        self._update_chunks(coordinate_system, screen.get_size(), surfaces)
+        # self.update_chunks(coordinate_system, screen.get_size())
 
         # draw points in chunks
         viewport = coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen.get_size()]))

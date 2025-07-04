@@ -9,3 +9,6 @@ class Drawable(ABC):
     @abstractmethod
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
         pass
+
+    def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem) -> bool:
+        return False

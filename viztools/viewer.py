@@ -59,6 +59,11 @@ class Viewer(ABC):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system)
 
+    def update_drawables(self, drawables: List[Drawable]):
+        for drawable in drawables:
+            render_needed = drawable.update(self.screen, self.coordinate_system)
+            self.render_needed = self.render_needed or render_needed
+
     def render_coordinate_system(self, draw_numbers=True):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_font, draw_numbers=draw_numbers)
 
