@@ -10,15 +10,23 @@ from viztools.viewer import Viewer
 
 class SimpleViewer(Viewer):
     def __init__(self):
-        super().__init__(drag_mouse_button=1)
+        super().__init__(drag_mouse_button=2)
         num_points = 50000
+        positions = np.random.normal(size=(num_points, 2))
+        positions[:, 0] *= 5
+        positions[:, 1] *= 10
         self.points = Points(
-            np.random.normal(size=(num_points, 2)) * 5,
+            positions,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
-            size=np.random.randint(1, 5, size=num_points) ** 2 / 250,
-            # size=5,
+            # size=np.random.randint(1, 5, size=num_points) ** 2 / 250,
+            size=5,
             color=np.array([0, 255, 0, 50])
         )
+        # self.points = Points(
+        #     np.array([[0, 0], [1, 0], [2, 0]]),
+        #     size=0.5,
+        #     color=np.array([0, 255, 255, 50])
+        # )
         # point types:
         # 0 - normal
         # 1 - hovered
@@ -35,7 +43,7 @@ class SimpleViewer(Viewer):
         )
 
     def render(self):
-        self.render_coordinate_system(draw_numbers=False)
+        self.render_coordinate_system(draw_numbers=True)
         self.render_drawables([self.points, self.overlay_text])
 
     def handle_event(self, event: pg.event.Event):

@@ -75,6 +75,17 @@ class CoordinateSystem:
         return transform(self.coord, mat)
 
     def screen_to_space_t(self, mat: np.ndarray) -> np.ndarray:
+        """
+        Transform screen coordinates to space coordinates using the inverse
+        coordinate transformation matrix.
+
+        :param mat: Input matrix representing screen coordinates. It can be
+            either a 2D array with shape (N, 2) or a 1D array with shape (2,).
+            If the shape is (2,), it will be reshaped to (1, 2).
+
+        :return: A transformed matrix in space coordinates based on the
+            inverse coordinate transformation matrix of the object.
+        """
         return self.screen_to_space(mat.T).T
 
     def screen_to_space(self, mat: np.ndarray):
@@ -83,7 +94,7 @@ class CoordinateSystem:
         coordinate transformation matrix.
 
         :param mat: Input matrix representing screen coordinates. It can be
-            either a 2D array or a 1D array with shape (2,).
+            either a 2D array with shape (2, N) or a 1D array with shape (2,).
             If the shape is (2,), it will be reshaped to (2, 1).
 
         :return: A transformed matrix in space coordinates based on the

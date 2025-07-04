@@ -1,10 +1,12 @@
-from typing import Iterable, Tuple, Dict
+from typing import Iterable, Tuple, Dict, Optional
 
 import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.drawable import Drawable, _normalize_color
+from viztools.drawable import Drawable
+from viztools.drawable.draw_utils import normalize_color
+from viztools.drawable.draw_utils.chunking import ChunkGrid
 
 
 class Points(Drawable):
@@ -64,8 +66,14 @@ class Points(Drawable):
         for surf_params in self._get_surf_params():
             self._surface_parameters[surf_params.tobytes()] = surf_params
 
+        self.current_chunks: Optional[ChunkGrid] = None
+        self.last_zoom_factor = None
+
     def __len__(self):
         return len(self._points)
+
+    def _build_chunk_grid(self, zoom_factor: float, chunk_size: int = 200) -> ChunkGrid:
+        return ChunkGrid.from_points(self._points, chunk_size / zoom_factor)
 
     def _get_surf_params(self) -> np.ndarray:
         return np.concatenate([self._size, self._colors], axis=1)
@@ -74,7 +82,7 @@ class Points(Drawable):
         return np.concatenate([self._size[index, :], self._colors[index, :]], axis=0)
 
     def set_color(self, color: np.ndarray | Tuple[int, int, int, int], index: int):
-        self._colors[index, :] = _normalize_color(color)
+        self._colors[index, :] = normalize_color(color)
         self._update_surf_params(index)
 
     def _update_surf_params(self, index: int):
@@ -111,7 +119,23 @@ class Points(Drawable):
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
+    def _update_chunks(self, coordinate_system: CoordinateSystem, screen_size: Tuple[int, int]):
+        if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
+            self.current_chunks = None
+            self.last_zoom_factor = coordinate_system.zoom_factor
+
+        if self.current_chunks is None:
+            self.current_chunks = self._build_chunk_grid(coordinate_system.zoom_factor)
+
+        # get next update chunk
+        viewport = coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen_size]))
+        update_index = self.current_chunks.get_next_update_chunk(viewport)
+        if update_index is not None:
+            self.current_chunks.set_status(update_index, 2)
+
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
+        self._update_chunks(coordinate_system, screen.get_size())
+
         draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor)
         screen_size = np.array(screen.get_size(), dtype=np.int32)
 
@@ -132,6 +156,30 @@ class Points(Drawable):
         ):
             surface = surfaces[surf_params.tobytes()]
             screen.blit(surface, pos)
+
+        # draw chunks
+        left_bot_chunk_pos = np.array([
+            self.current_chunks.left_bot,
+            self.current_chunks.left_bot + self.current_chunks.chunk_size
+        ])
+        for chunk_x in range(self.current_chunks.shape()[0]):
+            for chunk_y in range(self.current_chunks.shape()[1]):
+                offset = np.array([chunk_x * self.current_chunks.chunk_size, chunk_y * self.current_chunks.chunk_size])
+                chunk_pos = left_bot_chunk_pos + offset.reshape(1, 2)
+                chunk_pos_screen = coordinate_system.space_to_screen_t(chunk_pos)
+                left = int(chunk_pos_screen[0, 0])
+                top = int(chunk_pos_screen[1, 1])
+                right = int(chunk_pos_screen[1, 0])
+                bottom = int(chunk_pos_screen[0, 1])
+                rect = pg.Rect(left, top, abs(right - left), abs(bottom - top))
+                status = self.current_chunks.status[chunk_x, chunk_y]
+                if status == 0:
+                    color = pg.Color(255, 0, 0)
+                elif status == 1:
+                    color = pg.Color(0, 255, 0)
+                else:
+                    color = pg.Color(0, 0, 255)
+                pg.draw.rect(screen, color, rect, 1)
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
