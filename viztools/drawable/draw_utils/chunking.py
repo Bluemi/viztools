@@ -1,3 +1,4 @@
+import warnings
 from typing import Self, Tuple, Optional, Dict
 
 import numpy as np
@@ -6,8 +7,8 @@ import pygame as pg
 
 class ChunkGrid:
     def __init__(
-            self, surfaces: np.ndarray, point_chunk_indices: np.ndarray, chunk_point_indices: np.ndarray,
-            left_bot: np.ndarray, chunk_size: float, chunk_frames: np.ndarray,
+            self, surfaces: np.ndarray, points: np.ndarray, sizes: np.ndarray, point_chunk_indices: np.ndarray,
+            chunk_point_indices: np.ndarray, left_bot: np.ndarray, chunk_size: float, chunk_frames: np.ndarray,
     ):
         """
         Creates a new ChunkGrid object. This groups the given points into a grid of chunks with size (w, h).
@@ -15,6 +16,8 @@ class ChunkGrid:
         points-indices of the points in the chunk.
 
         :param surfaces: A numpy array with shape (w, h) of type pg.Surface.
+        :param points: The center positions of points in the coordinate system with shape (n, 2).
+        :param sizes: The sizes of the points in the coordinate system with shape n.
         :param point_chunk_indices: A numpy array with shape n of type int. Accessing point_indices[i] gives the
         chunk_index of the ith point. Left bottom chunk has index 0, the next chunk to the top has index 1.
         The top right chunk as index h*w-1.
@@ -23,12 +26,14 @@ class ChunkGrid:
         :param left_bot: The world coordinates of the bottom left corner of the bottom left chunk as a numpy array with
         shape 2 of type float.
         :param chunk_size: The size of the chunks in world coordinates.
-        :param chunk_frames: A numpy array with shape (w, h, 4). Each entry[x, y] contains the
-        (left, top, right, bottom) world coordinates of the surrounding frame. The surrounding frame is the area, in
-        which all contained points can be fully rendered. If no points are contained in the chunk, the frame should be
-        zeros.
+        :param chunk_frames: A numpy array with shape (w, h, 5). Each entry[x, y] contains the
+        (init, left, top, right, bottom) world coordinates of the surrounding frame. If init is 0.0, the frame is not
+        initialized. The surrounding frame is the area, in which all contained points can be fully rendered.
+        If no points are contained in the chunk, the frame should be zeros.
         """
         self.surfaces = surfaces
+        self.points = points
+        self.sizes = sizes
         self.point_chunk_indices = point_chunk_indices
         self.chunk_point_indices = chunk_point_indices
         self.left_bot = left_bot
@@ -79,27 +84,14 @@ class ChunkGrid:
         # index = x * h + y
         point_chunk_indices: np.ndarray = chunk_indices_per_axis[:, 1] + chunk_indices_per_axis[:, 0] * chunks_shape[1]
 
-        chunks_point_indices = np.full(chunks_shape, None, dtype=object)
-        for chunk_x in range(chunks_shape[0]):
-            for chunk_y in range(chunks_shape[1]):
-                current_chunk_index: int = chunk_x * chunks_shape[1] + chunk_y
-                cur_chunk = np.nonzero(np.equal(point_chunk_indices, current_chunk_index))[0]
-                chunks_point_indices[chunk_x, chunk_y] = cur_chunk
+        chunk_point_indices = np.full(chunks_shape, None, dtype=object)
 
         # building chunk frames
-        chunk_frames = np.zeros((*chunks_shape, 4))
-        for chunk_x in range(chunks_shape[0]):
-            for chunk_y in range(chunks_shape[1]):
-                point_indices = chunks_point_indices[chunk_x, chunk_y]
-                if point_indices.shape[0] != 0:
-                    point_positions = points[point_indices]
-                    point_sizes = sizes[point_indices].reshape(-1, 1)
+        chunk_frames = np.zeros((*chunks_shape, 5))
 
-                    left_bot = np.min(point_positions - point_sizes, axis=0)
-                    right_top = np.max(point_positions + point_sizes, axis=0)
-                    chunk_frames[chunk_x, chunk_y] = (left_bot[0], right_top[1], right_top[0], left_bot[1])
-
-        return ChunkGrid(surfaces, point_chunk_indices, chunks_point_indices, most_left_bot, chunk_size, chunk_frames)
+        return ChunkGrid(
+            surfaces, points, sizes, point_chunk_indices, chunk_point_indices, most_left_bot, chunk_size, chunk_frames
+        )
     
     def get_in_viewport_chunk_indices(self, viewport: np.ndarray) -> np.ndarray:
         """
@@ -171,7 +163,31 @@ class ChunkGrid:
 
     def chunk_frame_size(self, chunk_index: int) -> Tuple[float, float]:
         frame = self.chunk_frames[self.chunk_index_tuple(chunk_index)]
-        return abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
+        if frame[0] > 0.5:
+            return abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
+        warnings.warn(f'using approximation for frame size for chunk {chunk_index}')
+        return self.chunk_size, self.chunk_size
+
+    def get_chunk_point_indices(self, chunk_index_tuple: Tuple[int, int]) -> np.ndarray:
+        chunk_x, chunk_y = chunk_index_tuple
+        if self.chunk_point_indices[chunk_index_tuple] is None:
+            chunk_index: int = chunk_index_tuple[0] * self.shape()[1] + chunk_index_tuple[1]
+            cur_chunk = np.nonzero(np.equal(self.point_chunk_indices, chunk_index))[0]
+            self.chunk_point_indices[chunk_x, chunk_y] = cur_chunk
+        return self.chunk_point_indices[chunk_index_tuple]
+
+    def get_chunk_frame(self, chunk_index_tuple: Tuple[int, int]) -> np.ndarray:
+        frame = self.chunk_frames[chunk_index_tuple]
+        if frame[0] < 0.5:
+            point_indices = self.get_chunk_point_indices(chunk_index_tuple)
+            if point_indices.shape[0] != 0:
+                point_positions = self.points[point_indices]
+                point_sizes = self.sizes[point_indices].reshape(-1, 1)
+
+                left_bot = np.min(point_positions - point_sizes, axis=0)
+                right_top = np.max(point_positions + point_sizes, axis=0)
+                self.chunk_frames[chunk_index_tuple] = (1.0, left_bot[0], right_top[1], right_top[0], left_bot[1])
+        return self.chunk_frames[chunk_index_tuple][1:]
 
     def render_chunk(
             self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, colors: np.ndarray, surf_params: np.ndarray,
@@ -183,7 +199,7 @@ class ChunkGrid:
         """
         chunk_index = self.chunk_index_tuple(chunk_index)
 
-        frame = self.chunk_frames[chunk_index]
+        frame = self.get_chunk_frame(chunk_index)
         left_bot = np.array([frame[0], frame[3]])
         frame_size = abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
         render_size = tuple(int(round(s * zoom_factor)) for s in frame_size)

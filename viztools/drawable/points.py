@@ -163,7 +163,7 @@ class Points(Drawable):
             # noinspection PyTypeChecker
             chunk_surface: Optional[pg.Surface] = self.current_chunks.surfaces[chunk_x, chunk_y]
             if chunk_surface is not None:
-                chunk_frame = self.current_chunks.chunk_frames[chunk_x, chunk_y]
+                chunk_frame = self.current_chunks.get_chunk_frame((chunk_x, chunk_y))
                 left_top = np.array([[chunk_frame[0], chunk_frame[1]]])
                 left_top_screen = coordinate_system.space_to_screen_t(left_top)
                 left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
