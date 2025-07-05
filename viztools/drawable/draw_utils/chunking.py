@@ -133,9 +133,10 @@ class ChunkGrid:
         else:
             width = abs(viewport[1, 0] - viewport[0, 0])
             height = abs(viewport[1, 1] - viewport[0, 1])
+            viewport_extension = 1.0
             extended_viewport = np.array([
-                [viewport[0, 0] - width * 0.5, viewport[0, 1] - height * 0.5],
-                [viewport[1, 0] + width * 0.5, viewport[1, 1] - height * 0.5]
+                [viewport[0, 0] - width * viewport_extension, viewport[0, 1] + height * viewport_extension],
+                [viewport[1, 0] + width * viewport_extension, viewport[1, 1] - height * viewport_extension]
             ])
             return self._get_next_update_chunk_impl(extended_viewport)
 
@@ -220,7 +221,6 @@ class ChunkGrid:
 
         for pos, size, color, surf_params in zip(render_positions, sizes, colors, surf_params):
             point_surface = point_surfaces[surf_params.tobytes()]
-            # print('pos:', pos, render_size[1])
             surface.blit(point_surface, pos)
 
         self.status[chunk_index] = 2

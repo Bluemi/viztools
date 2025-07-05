@@ -1,3 +1,4 @@
+import time
 from typing import Iterable, Tuple, Dict, Optional
 
 import pygame as pg
@@ -12,7 +13,7 @@ from viztools.drawable.draw_utils.chunking import ChunkGrid
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
-            color: np.ndarray | None = None, chunk_updates_per_frame: int = 4
+            color: np.ndarray | None = None
     ):
         """
         Drawable to display a set of points.
@@ -21,7 +22,6 @@ class Points(Drawable):
                      to a float, this is the radius on the screen in units of the coordinate system. If set to a list,
                      it contains the sizes for each point.
         :param color: The color of the points.
-        :param chunk_updates_per_frame: The number of chunks updated per frame. Lower values increase fps, lower higher
         values prevent unrendered chunks from being visible.
         """
         # points
@@ -70,7 +70,6 @@ class Points(Drawable):
 
         self.current_chunks: Optional[ChunkGrid] = None
         self.last_zoom_factor = None
-        self.chunk_updates_per_frame = chunk_updates_per_frame
 
     def __len__(self):
         return len(self._points)
@@ -133,10 +132,13 @@ class Points(Drawable):
         if self.current_chunks is None:
             self.current_chunks = self._build_chunk_grid(coordinate_system.zoom_factor)
 
-        for i in range(self.chunk_updates_per_frame):
+        start_time = time.perf_counter()
+        while True:
             update_needed = self.render_next_chunk(coordinate_system, point_surfaces, screen_size)
             if not update_needed:
                 return False
+            if time.perf_counter() - start_time > 1 / 60:
+                break
         return True
 
     def render_next_chunk(self, coordinate_system, point_surfaces, screen_size):
