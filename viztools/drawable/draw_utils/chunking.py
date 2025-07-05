@@ -132,6 +132,26 @@ class ChunkGrid:
         Calculates the chunk index of the next chunk to draw.
         
         :param viewport: Numpy array of shape (2, 2) with the viewport coordinates in world coordinates.
+        Accessing viewport[0] gives the left top corner of the viewport in world coordinates. Accessing viewport[1]
+        gives the right bottom corner of the viewport in world coordinates.
+        """
+        update_chunk = self._get_next_update_chunk_impl(viewport)
+        if update_chunk is not None:
+            return update_chunk
+        else:
+            width = abs(viewport[1, 0] - viewport[0, 0])
+            height = abs(viewport[1, 1] - viewport[0, 1])
+            extended_viewport = np.array([
+                [viewport[0, 0] - width * 0.5, viewport[0, 1] - height * 0.5],
+                [viewport[1, 0] + width * 0.5, viewport[1, 1] - height * 0.5]
+            ])
+            return self._get_next_update_chunk_impl(extended_viewport)
+
+    def _get_next_update_chunk_impl(self, viewport: np.ndarray) -> Optional[int]:
+        """
+        Calculates the chunk index of the next chunk to draw.
+
+        :param viewport: Numpy array of shape (2, 2) with the viewport coordinates in world coordinates.
         Accessing viewport[0] gives the top left corner of the viewport in world coordinates. Accessing viewport[1]
         gives the bottom right corner of the viewport in world coordinates.
         """
