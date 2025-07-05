@@ -88,6 +88,10 @@ class Points(Drawable):
         self._colors[index, :] = normalize_color(color)
         self._update_surf_params(index)
 
+        # mark chunk to render new
+        chunk_index = self.current_chunks.point_chunk_indices[index]
+        self.current_chunks.set_status(chunk_index, 1)
+
     def _update_surf_params(self, index: int):
         surf_params = self._get_surf_param(index)
         self._surface_parameters[surf_params.tobytes()] = surf_params
