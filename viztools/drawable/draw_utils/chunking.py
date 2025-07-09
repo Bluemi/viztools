@@ -221,7 +221,7 @@ class ChunkGrid:
         self.status[chunk_x, chunk_y] = 2
 
     def render_chunk(
-            self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, colors: np.ndarray, surf_params: np.ndarray,
+            self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, surf_params: np.ndarray,
             zoom_factor: float, point_surfaces: Dict[bytes, pg.Surface]
     ):
         """
@@ -238,7 +238,6 @@ class ChunkGrid:
 
         point_indices = self.chunk_point_indices[chunk_index]
         points = points[point_indices]
-        colors = colors[point_indices]
         sizes = sizes[point_indices]
         surf_params = surf_params[point_indices]
 
@@ -250,7 +249,7 @@ class ChunkGrid:
         render_positions[:, 1] = render_size[1] - render_positions[:, 1]  # flip y-axis
         render_positions = render_positions.round().astype(int)
 
-        for pos, size, color, surf_params in zip(render_positions, sizes, colors, surf_params):
+        for pos, surf_params in zip(render_positions, surf_params):
             point_surface = point_surfaces[surf_params.tobytes()]
             surface.blit(point_surface, pos)
 

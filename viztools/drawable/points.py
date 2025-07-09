@@ -118,15 +118,17 @@ class Points(Drawable):
             surfaces[k] = point_surface
         return surfaces
 
-    def _get_draw_sizes(self, zoom_factor: float) -> np.ndarray:
+    def _get_draw_sizes(self, zoom_factor: float, sizes: Optional[np.ndarray] = None) -> np.ndarray:
         """
         Computes the draw sizes for the given sizes and coordinate system.
         :param zoom_factor: A float defining the scale factor for relative sizes.
         size[i] must be multiplied with zoom_factor.
         :return: numpy array of integers of shape [N,] where N is the number of sizes.
         """
-        draw_sizes = self._size[:, 0].copy()
-        is_relative_size = self._size[:, 1] > 0.5
+        if sizes is None:
+            sizes = self._size
+        draw_sizes = sizes[:, 0].copy()
+        is_relative_size = sizes[:, 1] > 0.5
         draw_sizes[is_relative_size] *= zoom_factor
         return np.maximum(draw_sizes.astype(int), 1)
 
@@ -153,8 +155,8 @@ class Points(Drawable):
         if update_index is not None:
             sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], coordinate_system.zoom_factor)
             self.current_chunks.render_chunk(
-                update_index, self._points, sizes, self._colors,
-                self._get_surf_params(), coordinate_system.zoom_factor, point_surfaces
+                update_index, self._points, sizes, self._get_surf_params(), coordinate_system.zoom_factor,
+                point_surfaces
             )
             return True
         return False
@@ -168,7 +170,35 @@ class Points(Drawable):
         chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)
         if self.current_chunks.get_pixel_approx(coordinate_system.zoom_factor) > 4000:
             # too many pixels: immediate mode
-            pass
+
+            # create blit surfaces
+            surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
+
+            # draw points in chunks
+            for chunk_index in chunk_indices:
+                chunk_index_tuple = self.current_chunks.chunk_index_tuple(chunk_index)
+                point_indices = self.current_chunks.chunk_point_indices[chunk_index_tuple]
+                screen_size = np.array(screen.get_size(), dtype=np.int32)
+
+                # only consider points in chunk
+                chunk_points = self._points[point_indices]
+                chunk_sizes = self._size[point_indices]
+                chunk_draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor, chunk_sizes)
+                chunk_colors = self._colors[point_indices]
+                chunk_surf_params = self._get_surf_params()[point_indices]
+
+                # filter out points outside of screen
+                screen_points = coordinate_system.space_to_screen_t(chunk_points)
+                valid_positions = _get_valid_positions(screen_points, chunk_draw_sizes, screen_size)
+                screen_points = screen_points[valid_positions]
+                valid_sizes = chunk_draw_sizes[valid_positions]
+                screen_points -= valid_sizes.reshape(-1, 1)
+                valid_surf_params = chunk_surf_params[valid_positions]
+
+                # draw
+                for pos, surf_params in zip(screen_points, valid_surf_params):
+                    surface = surfaces[surf_params.tobytes()]
+                    screen.blit(surface, pos)
         else:
             for chunk_index in chunk_indices:
                 chunk_x, chunk_y = self.current_chunks.chunk_index_tuple(chunk_index)
