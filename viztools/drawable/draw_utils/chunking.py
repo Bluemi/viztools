@@ -209,7 +209,11 @@ class ChunkGrid:
     def resize_chunk(self, chunk_index_tuple: Tuple[int, int], zoom_factor: float):
         chunk_x, chunk_y = chunk_index_tuple
         _frame, render_size = self._get_render_frame_size(chunk_index_tuple, zoom_factor)
+        # don't render chunks with too many pixels
+        if np.prod(render_size) > 4000 ** 2:
+            return
         current_surface = self.get_surface((chunk_x, chunk_y))
+        # we can't scale if the surface has not been rendered yet
         if current_surface is None:
             return
         new_surface = pg.transform.scale(current_surface, render_size)
@@ -227,6 +231,9 @@ class ChunkGrid:
         chunk_index = self.chunk_index_tuple(chunk_index)
 
         frame, render_size = self._get_render_frame_size(chunk_index, zoom_factor)
+        # don't render chunks with too many pixels
+        if np.prod(render_size) > 4000 ** 2:
+            return
         surface = pg.Surface(render_size, pg.SRCALPHA)
 
         point_indices = self.chunk_point_indices[chunk_index]
@@ -249,6 +256,9 @@ class ChunkGrid:
 
         self.status[chunk_index] = 3
         self.surfaces[chunk_index] = surface
+
+    def get_pixel_approx(self, zoom_factor) -> int:
+        return int(self.chunk_size * zoom_factor)
 
     def _get_render_frame_size(self, chunk_index, zoom_factor):
         frame = self.get_chunk_frame(chunk_index)

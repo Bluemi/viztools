@@ -166,17 +166,21 @@ class Points(Drawable):
         # draw points in chunks
         viewport = get_viewport(coordinate_system, screen.get_size())
         chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)
-        for chunk_index in chunk_indices:
-            chunk_x, chunk_y = self.current_chunks.chunk_index_tuple(chunk_index)
-            if self.current_chunks.status[chunk_x, chunk_y] == 1:
-                self.current_chunks.resize_chunk((chunk_x, chunk_y), coordinate_system.zoom_factor)
-            chunk_surface = self.current_chunks.get_surface((chunk_x, chunk_y))
-            if chunk_surface is not None:
-                chunk_frame = self.current_chunks.get_chunk_frame((chunk_x, chunk_y))
-                left_top = np.array([[chunk_frame[0], chunk_frame[1]]])
-                left_top_screen = coordinate_system.space_to_screen_t(left_top)
-                left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
-                screen.blit(chunk_surface, left_top_screen)
+        if self.current_chunks.get_pixel_approx(coordinate_system.zoom_factor) > 4000:
+            # too many pixels: immediate mode
+            pass
+        else:
+            for chunk_index in chunk_indices:
+                chunk_x, chunk_y = self.current_chunks.chunk_index_tuple(chunk_index)
+                if self.current_chunks.status[chunk_x, chunk_y] == 1:
+                    self.current_chunks.resize_chunk((chunk_x, chunk_y), coordinate_system.zoom_factor)
+                chunk_surface = self.current_chunks.get_surface((chunk_x, chunk_y))
+                if chunk_surface is not None:
+                    chunk_frame = self.current_chunks.get_chunk_frame((chunk_x, chunk_y))
+                    left_top = np.array([[chunk_frame[0], chunk_frame[1]]])
+                    left_top_screen = coordinate_system.space_to_screen_t(left_top)
+                    left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
+                    screen.blit(chunk_surface, left_top_screen)
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
