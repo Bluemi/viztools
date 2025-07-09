@@ -195,13 +195,17 @@ class ChunkGrid:
         self.surfaces = np.full(shape, None, dtype=object)  # numpy array of pg.Surface
         self.status = np.zeros(shape, dtype=np.int32)
 
+    def get_surface(self, chunk_index_tuple: Tuple[int, int]) -> pg.Surface:
+        # noinspection PyTypeChecker
+        return self.surfaces[chunk_index_tuple]
+
     def resize_chunks(self, zoom_factor: float):
         # TODO: only resize in viewport
         for chunk_x in range(self.shape()[0]):
             for chunk_y in range(self.shape()[1]):
                 chunk_index = (chunk_x, chunk_y)
                 _frame, render_size = self._get_render_frame_size(chunk_index, zoom_factor)
-                current_surface: pg.Surface = self.surfaces[chunk_x, chunk_y]
+                current_surface = self.get_surface((chunk_x, chunk_y))
                 if current_surface is None:
                     continue
                 new_surface = pg.transform.scale(current_surface, render_size)
