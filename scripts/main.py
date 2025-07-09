@@ -10,8 +10,8 @@ from viztools.viewer import Viewer
 
 class SimpleViewer(Viewer):
     def __init__(self):
-        super().__init__(drag_mouse_button=2)
-        num_points = 1_000_000
+        super().__init__(drag_mouse_button=3)
+        num_points = 100_000
         positions = np.random.random(size=(num_points, 2))
         positions[:, 0] *= 20
         positions[:, 1] *= 40
