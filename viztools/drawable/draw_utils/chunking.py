@@ -196,6 +196,7 @@ class ChunkGrid:
         self.status = np.zeros(shape, dtype=np.int32)
 
     def resize_chunks(self, zoom_factor: float):
+        # TODO: only resize in viewport
         for chunk_x in range(self.shape()[0]):
             for chunk_y in range(self.shape()[1]):
                 chunk_index = (chunk_x, chunk_y)
