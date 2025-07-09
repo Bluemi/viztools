@@ -190,6 +190,23 @@ class ChunkGrid:
                 self.chunk_frames[chunk_index_tuple] = (1.0, left_bot[0], right_top[1], right_top[0], left_bot[1])
         return self.chunk_frames[chunk_index_tuple][1:]
 
+    def invalidate_chunks(self):
+        shape = self.shape()
+        self.surfaces = np.full(shape, None, dtype=object)  # numpy array of pg.Surface
+        self.status = np.zeros(shape, dtype=np.int32)
+
+    def resize_chunks(self, zoom_factor: float):
+        for chunk_x in range(self.shape()[0]):
+            for chunk_y in range(self.shape()[1]):
+                chunk_index = (chunk_x, chunk_y)
+                _frame, render_size = self._get_render_frame_size(chunk_index, zoom_factor)
+                current_surface: pg.Surface = self.surfaces[chunk_x, chunk_y]
+                if current_surface is None:
+                    continue
+                new_surface = pg.transform.scale(current_surface, render_size)
+                self.surfaces[chunk_x, chunk_y] = new_surface
+                self.status[chunk_x, chunk_y] = 1
+
     def render_chunk(
             self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, colors: np.ndarray, surf_params: np.ndarray,
             zoom_factor: float, point_surfaces: Dict[bytes, pg.Surface]
@@ -200,10 +217,7 @@ class ChunkGrid:
         """
         chunk_index = self.chunk_index_tuple(chunk_index)
 
-        frame = self.get_chunk_frame(chunk_index)
-        left_bot = np.array([frame[0], frame[3]])
-        frame_size = abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
-        render_size = tuple(int(round(s * zoom_factor)) for s in frame_size)
+        frame, render_size = self._get_render_frame_size(chunk_index, zoom_factor)
         surface = pg.Surface(render_size, pg.SRCALPHA)
 
         point_indices = self.chunk_point_indices[chunk_index]
@@ -212,6 +226,7 @@ class ChunkGrid:
         sizes = sizes[point_indices]
         surf_params = surf_params[point_indices]
 
+        left_bot = np.array([frame[0], frame[3]])
         render_positions = points - left_bot.reshape(1, 2)
         render_positions[:, 0] -= sizes
         render_positions[:, 1] += sizes
@@ -225,3 +240,9 @@ class ChunkGrid:
 
         self.status[chunk_index] = 2
         self.surfaces[chunk_index] = surface
+
+    def _get_render_frame_size(self, chunk_index, zoom_factor):
+        frame = self.get_chunk_frame(chunk_index)
+        frame_size = abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
+        render_size = tuple(int(round(s * zoom_factor)) for s in frame_size)
+        return frame, render_size

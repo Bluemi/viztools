@@ -68,7 +68,7 @@ class Points(Drawable):
         for surf_params in self._get_surf_params():
             self._surface_parameters[surf_params.tobytes()] = surf_params
 
-        self.current_chunks: Optional[ChunkGrid] = None
+        self.current_chunks: ChunkGrid = self._build_chunk_grid(100.0)
         self.last_zoom_factor = None
 
     def __len__(self):
@@ -126,11 +126,8 @@ class Points(Drawable):
         point_surfaces = self._create_point_surfaces(coordinate_system.zoom_factor)
 
         if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
-            self.current_chunks = None
             self.last_zoom_factor = coordinate_system.zoom_factor
-
-        if self.current_chunks is None:
-            self.current_chunks = self._build_chunk_grid(coordinate_system.zoom_factor)
+            self.current_chunks.resize_chunks(coordinate_system.zoom_factor)
 
         start_time = time.perf_counter()
         while True:
