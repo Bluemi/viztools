@@ -40,8 +40,9 @@ class ChunkGrid:
         self.chunk_size = chunk_size
         # meaning of status:
         # - 0: not rendered
-        # - 1: has to update
-        # - 2: ok
+        # - 1: has to rescale
+        # - 2: has to update
+        # - 3: ok
         self.status = np.zeros(surfaces.shape, dtype=np.int32)
         self.chunk_frames = chunk_frames
 
@@ -151,7 +152,7 @@ class ChunkGrid:
         chunk_indices = self.get_in_viewport_chunk_indices(viewport)
         chunk_status = self.status.flat[chunk_indices]
         most_needed_index = np.argmin(chunk_status)
-        if chunk_status[most_needed_index] == 2:
+        if chunk_status[most_needed_index] == 3:
             return None
         return int(chunk_indices[most_needed_index])
 
@@ -210,7 +211,7 @@ class ChunkGrid:
                     continue
                 new_surface = pg.transform.scale(current_surface, render_size)
                 self.surfaces[chunk_x, chunk_y] = new_surface
-                self.status[chunk_x, chunk_y] = 1
+                self.status[chunk_x, chunk_y] = 2
 
     def render_chunk(
             self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, colors: np.ndarray, surf_params: np.ndarray,
@@ -243,7 +244,7 @@ class ChunkGrid:
             point_surface = point_surfaces[surf_params.tobytes()]
             surface.blit(point_surface, pos)
 
-        self.status[chunk_index] = 2
+        self.status[chunk_index] = 3
         self.surfaces[chunk_index] = surface
 
     def _get_render_frame_size(self, chunk_index, zoom_factor):

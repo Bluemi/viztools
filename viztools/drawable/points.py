@@ -90,7 +90,7 @@ class Points(Drawable):
 
         # mark chunk to render new
         chunk_index = self.current_chunks.point_chunk_indices[index]
-        self.current_chunks.set_status(chunk_index, 1)
+        self.current_chunks.set_status(chunk_index, 2)
 
     def _update_surf_params(self, index: int):
         surf_params = self._get_surf_param(index)
