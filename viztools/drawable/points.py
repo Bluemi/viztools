@@ -10,6 +10,10 @@ from viztools.drawable.draw_utils import normalize_color
 from viztools.drawable.draw_utils.chunking import ChunkGrid
 
 
+def get_viewport(coordinate_system, screen_size):
+    return coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen_size]))
+
+
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
@@ -89,7 +93,7 @@ class Points(Drawable):
         self._update_surf_params(index)
 
         # mark chunk to render new
-        chunk_index = self.current_chunks.point_chunk_indices[index]
+        chunk_index = int(self.current_chunks.point_chunk_indices[index])
         self.current_chunks.set_status(chunk_index, 2)
 
     def _update_surf_params(self, index: int):
@@ -131,7 +135,8 @@ class Points(Drawable):
 
         if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
             self.last_zoom_factor = coordinate_system.zoom_factor
-            self.current_chunks.resize_chunks(coordinate_system.zoom_factor)
+            viewport = get_viewport(coordinate_system, screen_size)
+            self.current_chunks.resize_chunks(coordinate_system.zoom_factor, viewport)
 
         start_time = time.perf_counter()
         while True:
@@ -143,7 +148,7 @@ class Points(Drawable):
         return True
 
     def render_next_chunk(self, coordinate_system, point_surfaces, screen_size):
-        viewport = coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen_size]))
+        viewport = get_viewport(coordinate_system, screen_size)
         update_index = self.current_chunks.get_next_update_chunk(viewport)
         if update_index is not None:
             sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], coordinate_system.zoom_factor)
@@ -159,12 +164,13 @@ class Points(Drawable):
 
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
         # draw points in chunks
-        viewport = coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen.get_size()]))
+        viewport = get_viewport(coordinate_system, screen.get_size())
         chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)
         for chunk_index in chunk_indices:
             chunk_x, chunk_y = self.current_chunks.chunk_index_tuple(chunk_index)
-            # noinspection PyTypeChecker
-            chunk_surface: Optional[pg.Surface] = self.current_chunks.surfaces[chunk_x, chunk_y]
+            if self.current_chunks.status[chunk_x, chunk_y] == 1:
+                self.current_chunks.resize_chunk((chunk_x, chunk_y), coordinate_system.zoom_factor)
+            chunk_surface = self.current_chunks.get_surface((chunk_x, chunk_y))
             if chunk_surface is not None:
                 chunk_frame = self.current_chunks.get_chunk_frame((chunk_x, chunk_y))
                 left_top = np.array([[chunk_frame[0], chunk_frame[1]]])

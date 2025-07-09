@@ -196,22 +196,25 @@ class ChunkGrid:
         self.surfaces = np.full(shape, None, dtype=object)  # numpy array of pg.Surface
         self.status = np.zeros(shape, dtype=np.int32)
 
-    def get_surface(self, chunk_index_tuple: Tuple[int, int]) -> pg.Surface:
+    def get_surface(self, chunk_index_tuple: Tuple[int, int]) -> Optional[pg.Surface]:
         # noinspection PyTypeChecker
         return self.surfaces[chunk_index_tuple]
 
-    def resize_chunks(self, zoom_factor: float):
-        # TODO: only resize in viewport
-        for chunk_x in range(self.shape()[0]):
-            for chunk_y in range(self.shape()[1]):
-                chunk_index = (chunk_x, chunk_y)
-                _frame, render_size = self._get_render_frame_size(chunk_index, zoom_factor)
-                current_surface = self.get_surface((chunk_x, chunk_y))
-                if current_surface is None:
-                    continue
-                new_surface = pg.transform.scale(current_surface, render_size)
-                self.surfaces[chunk_x, chunk_y] = new_surface
-                self.status[chunk_x, chunk_y] = 2
+    def resize_chunks(self, zoom_factor: float, viewport: np.ndarray):
+        self.status[:] = 1  # everything has to be rescaled
+        for chunk_index in self.get_in_viewport_chunk_indices(viewport):
+            chunk_index = self.chunk_index_tuple(chunk_index)
+            self.resize_chunk(chunk_index, zoom_factor)
+
+    def resize_chunk(self, chunk_index_tuple: Tuple[int, int], zoom_factor: float):
+        chunk_x, chunk_y = chunk_index_tuple
+        _frame, render_size = self._get_render_frame_size(chunk_index_tuple, zoom_factor)
+        current_surface = self.get_surface((chunk_x, chunk_y))
+        if current_surface is None:
+            return
+        new_surface = pg.transform.scale(current_surface, render_size)
+        self.surfaces[chunk_x, chunk_y] = new_surface
+        self.status[chunk_x, chunk_y] = 2
 
     def render_chunk(
             self, chunk_index: int, points: np.ndarray, sizes: np.ndarray, colors: np.ndarray, surf_params: np.ndarray,
