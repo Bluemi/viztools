@@ -16,7 +16,8 @@ class SimpleViewer(Viewer):
         positions[:, 0] *= 20
         positions[:, 1] *= 40
         self.points = Points(
-            positions,
+            np.random.normal(size=(num_points, 2)) * 5,
+            # positions,
             # np.array([[0, 0], [1, 1], [-1, 2]]),
             # size=np.random.randint(1, 5, size=num_points) ** 2 / 250,
             size=5,
