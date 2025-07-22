@@ -1,4 +1,3 @@
-import warnings
 from typing import Self, Tuple, Optional, Dict
 
 import numpy as np
@@ -164,11 +163,8 @@ class ChunkGrid:
         return chunk_index // s[1], chunk_index % s[1]
 
     def chunk_frame_size(self, chunk_index: int) -> Tuple[float, float]:
-        frame = self.chunk_frames[self.chunk_index_tuple(chunk_index)]
-        if frame[0] > 0.5:
-            return abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
-        warnings.warn(f'using approximation for frame size for chunk {chunk_index}')
-        return self.chunk_size, self.chunk_size
+        frame = self.get_chunk_frame(self.chunk_index_tuple(chunk_index))
+        return abs(float(frame[2] - frame[0])), abs(float(frame[3] - frame[1]))
 
     def get_chunk_point_indices(self, chunk_index_tuple: Tuple[int, int]) -> np.ndarray:
         chunk_x, chunk_y = chunk_index_tuple
@@ -200,8 +196,10 @@ class ChunkGrid:
         # noinspection PyTypeChecker
         return self.surfaces[chunk_index_tuple]
 
-    def resize_chunks(self, zoom_factor: float, viewport: np.ndarray):
+    def resize_chunks(self, zoom_factor: float, viewport: np.ndarray, point_sizes: np.ndarray):
         self.status[:] = 1  # everything has to be rescaled
+        self.chunk_frames[:, :, 0] = 0.0  # frames have to be recalculated
+        self.sizes = point_sizes
         for chunk_index in self.get_in_viewport_chunk_indices(viewport):
             chunk_index = self.chunk_index_tuple(chunk_index)
             self.resize_chunk(chunk_index, zoom_factor)

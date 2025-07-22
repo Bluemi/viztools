@@ -139,7 +139,8 @@ class Points(Drawable):
         if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
             self.last_zoom_factor = coordinate_system.zoom_factor
             viewport = get_viewport(coordinate_system, screen_size)
-            self.current_chunks.resize_chunks(coordinate_system.zoom_factor, viewport)
+            new_sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], coordinate_system.zoom_factor)
+            self.current_chunks.resize_chunks(coordinate_system.zoom_factor, viewport, new_sizes)
 
         start_time = time.perf_counter()
         while True:
