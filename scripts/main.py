@@ -21,7 +21,8 @@ class SimpleViewer(Viewer):
             # np.array([[0, 0], [1, 1], [-1, 2]]),
             # size=np.random.randint(1, 5, size=num_points) ** 2 / 250,
             size=5,
-            color=np.array([0, 255, 0, 50])
+            color=np.array([0, 255, 0, 50]),
+            chunk_size=400.0
         )
         # self.points = Points(
         #     np.array([[0, 0], [1, 0], [2, 0]]),

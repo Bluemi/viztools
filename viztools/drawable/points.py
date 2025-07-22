@@ -17,7 +17,7 @@ def get_viewport(coordinate_system, screen_size):
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
-            color: np.ndarray | None = None
+            color: np.ndarray | None = None, chunk_size: float = 200.0,
     ):
         """
         Drawable to display a set of points.
@@ -26,7 +26,8 @@ class Points(Drawable):
                      to a float, this is the radius on the screen in units of the coordinate system. If set to a list,
                      it contains the sizes for each point.
         :param color: The color of the points.
-        values prevent unrendered chunks from being visible.
+        :param chunk_size: The size of the chunks in world coordinates used for rendering.
+        Bigger chunks are faster for render, but can lead to lag.
         """
         # points
         if not isinstance(points, np.ndarray):
@@ -72,13 +73,13 @@ class Points(Drawable):
         for surf_params in self._get_surf_params():
             self._surface_parameters[surf_params.tobytes()] = surf_params
 
-        self.current_chunks: ChunkGrid = self._build_chunk_grid(100.0)
+        self.current_chunks: ChunkGrid = self._build_chunk_grid(100.0, chunk_size=chunk_size)
         self.last_zoom_factor = None
 
     def __len__(self):
         return len(self._points)
 
-    def _build_chunk_grid(self, zoom_factor: float, chunk_size: int = 200) -> ChunkGrid:
+    def _build_chunk_grid(self, zoom_factor: float, chunk_size: float = 200.0) -> ChunkGrid:
         sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], zoom_factor)
         return ChunkGrid.from_points(self._points, sizes, chunk_size / zoom_factor)
 
