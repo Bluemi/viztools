@@ -9,6 +9,10 @@ case "$1" in
 		shift
 		python3 scripts/main2.py "$@"
 		;;
+	r3)
+		shift
+		python3 scripts/main3.py "$@"
+		;;
 	*)
 		echo "invalid option for run.sh"
 		;;

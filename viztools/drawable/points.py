@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, Tuple, Dict, Optional
+from typing import Iterable, Tuple, Dict, Optional, Union
 
 import pygame as pg
 import numpy as np
@@ -17,7 +17,7 @@ def get_viewport(coordinate_system, screen_size):
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
-            color: np.ndarray | None = None, chunk_size: float = 200.0,
+            color: Optional[np.ndarray] = None, chunk_size: float = 200.0,
     ):
         """
         Drawable to display a set of points.
@@ -89,7 +89,7 @@ class Points(Drawable):
     def _get_surf_param(self, index: int) -> np.ndarray:
         return np.concatenate([self._size[index, :], self._colors[index, :]], axis=0)
 
-    def set_color(self, color: np.ndarray | Tuple[int, int, int, int], index: int):
+    def set_color(self, color: Union[np.ndarray, Tuple[int, int, int, int]], index: int):
         self._colors[index, :] = normalize_color(color)
         self._update_surf_params(index)
 
@@ -186,7 +186,6 @@ class Points(Drawable):
                 chunk_points = self._points[point_indices]
                 chunk_sizes = self._size[point_indices]
                 chunk_draw_sizes = self._get_draw_sizes(coordinate_system.zoom_factor, chunk_sizes)
-                chunk_colors = self._colors[point_indices]
                 chunk_surf_params = self._get_surf_params()[point_indices]
 
                 # filter out points outside of screen
