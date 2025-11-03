@@ -5,6 +5,7 @@ from PIL import Image as PilImage
 import pygame as pg
 import numpy as np
 
+from viztools.drawable.draw_utils import AnkerType
 from viztools.drawable.image import Image
 from viztools.drawable.lines import Lines
 from viztools.viewer import Viewer
@@ -14,7 +15,7 @@ class SimpleViewer(Viewer):
     def __init__(self):
         super().__init__(drag_mouse_button=2)
         with PilImage.open('images/n02085936_7515.jpg') as image:
-            self.image = Image(image, np.array([0, 0]))
+            self.image = Image(image, np.array([0, 0]), anker_type=AnkerType.TOP)
         num_lines = 10
         positions = np.random.random(size=(num_lines, 2))
         positions *= 10
