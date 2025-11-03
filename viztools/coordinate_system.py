@@ -53,28 +53,30 @@ class CoordinateSystem:
         """
         return self.space_to_screen(np.array([0.0, 0.0]))
 
-    def space_to_screen_t(self, mat: np.ndarray):
+    def space_to_screen_t(self, mat: np.ndarray, translate: bool = True) -> np.ndarray:
         """
         Transform the given matrix with the internal coordinates.
 
         :param mat: A list of column vectors with shape [N, 2]. For vectors shape should be [1, 2].
+        :param translate: If translate is True, translation is applied. Otherwise only rotation and scaling is applied.
         :return: A list of column vectors with shape [N, 2].
         """
-        return self.space_to_screen(mat.T).T
+        return self.space_to_screen(mat.T, translate).T
 
-    def space_to_screen(self, mat: np.ndarray) -> np.ndarray:
+    def space_to_screen(self, mat: np.ndarray, translate: bool = True) -> np.ndarray:
         """
         Transform the given matrix with the internal coordinates.
 
         :param mat: A list of column vectors with shape [2, N]. For vectors shape should be [2, 1].
+        :param translate: If translate is True, translation is applied. Otherwise only rotation and scaling is applied.
         :return: A list of column vectors with shape [2, N].
         """
         mat = to_np_array(mat)
         if mat.shape == (2,):
             mat = mat.reshape(2, 1)
-        return transform(self.coord, mat)
+        return transform(self.coord, mat, translate=translate)
 
-    def screen_to_space_t(self, mat: np.ndarray) -> np.ndarray:
+    def screen_to_space_t(self, mat: np.ndarray, translate: bool = True) -> np.ndarray:
         """
         Transform screen coordinates to space coordinates using the inverse
         coordinate transformation matrix.
@@ -82,13 +84,14 @@ class CoordinateSystem:
         :param mat: Input matrix representing screen coordinates. It can be
             either a 2D array with shape (N, 2) or a 1D array with shape (2,).
             If the shape is (2,), it will be reshaped to (1, 2).
+        :param translate: If translate is True, translation is applied. Otherwise only rotation and scaling is applied.
 
         :return: A transformed matrix in space coordinates based on the
             inverse coordinate transformation matrix of the object.
         """
-        return self.screen_to_space(mat.T).T
+        return self.screen_to_space(mat.T, translate).T
 
-    def screen_to_space(self, mat: np.ndarray):
+    def screen_to_space(self, mat: np.ndarray, translate: bool = True):
         """
         Transform screen coordinates to space coordinates using the inverse
         coordinate transformation matrix.
@@ -96,6 +99,7 @@ class CoordinateSystem:
         :param mat: Input matrix representing screen coordinates. It can be
             either a 2D array with shape (2, N) or a 1D array with shape (2,).
             If the shape is (2,), it will be reshaped to (2, 1).
+        :param translate: If translate is True, translation is applied. Otherwise only rotation and scaling is applied.
 
         :return: A transformed matrix in space coordinates based on the
             inverse coordinate transformation matrix of the object.
@@ -103,13 +107,15 @@ class CoordinateSystem:
         mat = to_np_array(mat)
         if mat.shape == (2,):
             mat = mat.reshape(2, 1)
-        return transform(self.inverse_coord, mat)
+        return transform(self.inverse_coord, mat, translate=translate)
 
     def update_inv(self):
         self.inverse_coord = np.linalg.pinv(self.coord)
 
 
-def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False) -> np.ndarray:
+def transform(
+        transform_matrix: np.ndarray, mat: np.ndarray, perspective: bool = False, translate: bool = True
+) -> np.ndarray:
     """
     Transforms a given matrix with the given transformation matrix.
     Transformation matrix should be of shape [2, 2] or [3, 3]. If transformation matrix is of shape [3, 3] and the
@@ -122,6 +128,8 @@ def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False) 
     :param mat: The matrix to convert of shape [2, N]. If mat is of shape [2,] it will be converted to [2, 1].
     :param perspective: If perspective is True and the transform_mat is of shape (3, 3), the x- and y-axis of the
                         resulting vector are divided by the resulting z axis.
+    :param translate: If translate is True, the resulting vector is translated by the translation vector of the
+                      transform_matrix. Otherwise only rotation and scaling is applied.
     :return:
     """
     expanded = False
@@ -132,7 +140,8 @@ def transform(transform_matrix: np.ndarray, mat: np.ndarray, perspective=False) 
     padded = False
     if transform_matrix.shape == (3, 3):
         # noinspection PyTypeChecker
-        mat = np.concatenate([mat, np.ones((1, mat.shape[1]))], axis=0)
+        pad_func = np.ones if translate else np.zeros
+        mat = np.concatenate([mat, pad_func((1, mat.shape[1]))], axis=0)
         padded = True
 
     result = transform_matrix @ mat
