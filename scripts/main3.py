@@ -32,6 +32,9 @@ class SimpleViewer(Viewer):
 
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
+        clicked_points = self.lines.clicked_points(event, self.coordinate_system)
+        if clicked_points.shape[0] > 0:
+            print(clicked_points)
 
 
 def main():
