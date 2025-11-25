@@ -47,7 +47,7 @@ class Image(Drawable):
         self.offset = offset
         self.offset_color = offset_color
 
-    def _ensure_image_surf_array(self):
+    def _ensure_image_surface(self):
         if self.image_surface is None:
             self.image_surface = bytes_to_surf_array(self.image_data)
 
@@ -61,9 +61,8 @@ class Image(Drawable):
         target_rect = pg.Rect(0, 0, size[1], size[0])
         target_rect = self.anker_type.arrange_rect(target_rect, screen_points)
 
-        is_visible = target_rect.colliderect(screen.get_rect())
-        if is_visible:
-            self._ensure_image_surf_array()
+        if target_rect.colliderect(screen.get_rect()) and np.prod(target_rect.size) < 30000000:
+            self._ensure_image_surface()
             if self.last_size is None or np.any(size != self.last_size):
                 self.scaled_surface = pg.transform.scale(self.image_surface, (size[1], size[0]))
                 self.last_size = size
@@ -71,6 +70,11 @@ class Image(Drawable):
             if self.offset_color is not None:
                 pg.draw.line(screen, self.offset_color, anchor_point, screen_points, 2)
             screen.blit(self.scaled_surface, target_rect)
+        else:
+            # remove unused data
+            self.last_size = None
+            self.scaled_surface = None
+            self.image_surface = None
 
 
 def fix_image_axis_swap(image: Union[np.ndarray, PilImage.Image]) -> Union[np.ndarray, PilImage.Image]:

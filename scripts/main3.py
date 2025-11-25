@@ -18,7 +18,7 @@ class SimpleViewer(Viewer):
         self.images = []
         for i in range(n_images):
             with PilImage.open('images/n02085936_7515.jpg') as image:
-                image = np.array(image)
+                # image = np.array(image)
                 self.images.append(Image(image, np.array([i*6, 0]), anker_type=AnkerType.TOP))
         num_lines = 10
         positions = np.random.random(size=(num_lines, 2))
