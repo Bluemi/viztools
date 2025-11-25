@@ -53,6 +53,22 @@ class CoordinateSystem:
         """
         return self.space_to_screen(np.array([0.0, 0.0]))
 
+    def get_viewport(self, screen_size: Tuple[int, int] | np.ndarray) -> np.ndarray:
+        """
+        Calculates the viewport for the given screen size in world coordinates.
+
+        This method transforms the screen size dimensions into the space coordinates.
+        It is capable of handling both tuples and NumPy arrays as input for the screen size dimensions.
+
+        :param screen_size: The dimensions of the screen size, given as either a tuple of
+            integers (width, height) or a NumPy array.
+            Type: Tuple[int, int] | np.ndarray
+        :return: Transformed viewport represented as a NumPy array after applying
+            screen-to-space transformation.
+            Type: np.ndarray
+        """
+        return self.screen_to_space_t(np.array([[0.0, 0.0], screen_size]))
+
     def space_to_screen_t(self, mat: np.ndarray, translate: bool = True) -> np.ndarray:
         """
         Transform the given matrix with the internal coordinates.

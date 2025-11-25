@@ -10,10 +10,6 @@ from viztools.drawable.draw_utils import normalize_color
 from viztools.drawable.draw_utils.chunking import ChunkGrid
 
 
-def get_viewport(coordinate_system, screen_size):
-    return coordinate_system.screen_to_space_t(np.array([[0.0, 0.0], screen_size]))
-
-
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
@@ -138,7 +134,7 @@ class Points(Drawable):
 
         if self.last_zoom_factor is None or self.last_zoom_factor != coordinate_system.zoom_factor:
             self.last_zoom_factor = coordinate_system.zoom_factor
-            viewport = get_viewport(coordinate_system, screen_size)
+            viewport = coordinate_system.get_viewport(screen_size)
             new_sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], coordinate_system.zoom_factor)
             self.current_chunks.resize_chunks(coordinate_system.zoom_factor, viewport, new_sizes)
 
@@ -152,7 +148,7 @@ class Points(Drawable):
         return True
 
     def render_next_chunk(self, coordinate_system, point_surfaces, screen_size):
-        viewport = get_viewport(coordinate_system, screen_size)
+        viewport = coordinate_system.get_viewport(screen_size)
         update_index = self.current_chunks.get_next_update_chunk(viewport)
         if update_index is not None:
             sizes = _get_world_sizes(self._size[:, 0], self._size[:, 1], coordinate_system.zoom_factor)
@@ -168,7 +164,7 @@ class Points(Drawable):
 
     def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
         # draw points in chunks
-        viewport = get_viewport(coordinate_system, screen.get_size())
+        viewport = coordinate_system.get_viewport(screen.get_size())
         chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)
         if self.current_chunks.get_pixel_approx(coordinate_system.zoom_factor) > 4000:
             # too many pixels: immediate mode
