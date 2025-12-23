@@ -318,8 +318,8 @@ class TextField(UIElement):
         # out of region
         return None
 
-    def handle_event(self, event: pg.event.Event, render_context: RenderContext) -> bool:
-        handled = super().handle_event(event, render_context)
+    def handle_event(self, event: pg.event.Event, render_context: RenderContext):
+        super().handle_event(event, render_context)
 
         # Handle mouse button down - start selection
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
@@ -330,7 +330,6 @@ class TextField(UIElement):
                     self.cursor = cursor
                 self.selection_start = self.cursor
                 self.mouse_down = True
-                handled = True
             else:
                 self.is_focused = False
                 self.selection_start = None
@@ -342,7 +341,6 @@ class TextField(UIElement):
                     cursor = self._cursor_from_mouse_pos(event.pos)
                     if cursor is not None:
                         self.cursor = cursor
-                    handled = True
 
         # Handle mouse button up - finish selection
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
@@ -355,7 +353,6 @@ class TextField(UIElement):
         if event.type == pg.MOUSEWHEEL and self.is_hovered:
             self.scroll_offset = max(0, self.scroll_offset - event.y)
             self._clamp_scroll()
-            handled = True
 
         # Handle keyboard input only if focused
         if self.is_focused:
@@ -391,9 +388,6 @@ class TextField(UIElement):
                     self._cut_to_clipboard()
                 elif event.unicode and event.unicode.isprintable():
                     self._insert_text(event.unicode)
-                handled = True
-
-        return handled
 
     def _get_line(self, cursor: Cursor) -> Line:
         return self.lines[cursor.line_index]

@@ -25,8 +25,8 @@ class Button(UIElement):
 
         self.text_surface: Optional[pg.Surface] = None
 
-    def handle_event(self, event: pg.event.Event, render_context: RenderContext) -> bool:
-        return super().handle_event(event, render_context)
+    def handle_event(self, event: pg.event.Event, render_context: RenderContext):
+        super().handle_event(event, render_context)
 
     def render(self, screen: pg.Surface, render_context: RenderContext):
         # Draw button background
@@ -48,4 +48,3 @@ class Button(UIElement):
 
     def update(self, render_context: RenderContext):
         pass
-

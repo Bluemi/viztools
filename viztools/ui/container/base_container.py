@@ -20,10 +20,9 @@ class Container:
 
         yield from self._element_cache
 
-    def handle_events(self, events: List[pg.event.Event], render_context: RenderContext) -> List[pg.event.Event]:
+    def handle_events(self, events: List[pg.event.Event], render_context: RenderContext):
         for elem in self.iter_elements():
-            events = elem.handle_events(events, render_context)
-        return events
+            elem.handle_events(events, render_context)
 
     def render(self, screen: pg.Surface, render_context: RenderContext):
         for element in self.iter_elements():

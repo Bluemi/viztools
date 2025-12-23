@@ -19,7 +19,7 @@ class UIElement(ABC):
 
     def handle_events(
             self, events: List[pg.event.Event], render_context: RenderContext
-    ) -> List[pg.event.Event]:
+    ):
         """
         Handles the given events and updates the element, if needed.
         If a redraw is necessary, sets self.render_needed to True.
@@ -27,31 +27,23 @@ class UIElement(ABC):
         :param events: The events to handle.
         :return: A list of events, that were not handled by this drawable.
         """
-        unhandled_events = []
         for event in events:
-            if not self.handle_event(event, render_context):
-                unhandled_events.append(event)
+            self.handle_event(event, render_context)
         self.update(render_context)
 
-        return unhandled_events
-
     @abstractmethod
-    def handle_event(self, event: pg.event.Event, render_context: RenderContext) -> bool:
+    def handle_event(self, event: pg.event.Event, render_context: RenderContext):
         """
         Handle an event.
 
         :param event: The pygame event to handle
         :param render_context: The render context to use for rendering.
         """
-        handled = False
         if event.type == pg.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
         elif event.type == pg.MOUSEBUTTONUP:
             if self.is_hovered:
                 self.is_clicked = True
-                handled = True
-
-        return handled
 
     @abstractmethod
     def update(self, render_context: RenderContext):

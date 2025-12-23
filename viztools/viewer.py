@@ -82,13 +82,10 @@ class Viewer(ABC):
 
     def _handle_events(self):
         events = pg.event.get()
+        for ui_element in self.iter_elements():
+            ui_element.handle_events(events, self.render_context)
         for event in events:
             self.handle_event(event)
-        self.update_ui_elements(events)
-
-    def update_ui_elements(self, events: List[pg.event.Event]):
-        for ui_element in self.iter_elements():
-            events = ui_element.handle_events(events, self.render_context)
 
     def render_ui_elements(self):
         for ui_element in self.iter_elements():

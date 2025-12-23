@@ -59,8 +59,8 @@ class EditField(UIElement):
 
         return len(self.text)
 
-    def handle_event(self, event: pg.event.Event, render_context: RenderContext) -> bool:
-        handled = super().handle_event(event, render_context)
+    def handle_event(self, event: pg.event.Event, render_context: RenderContext):
+        super().handle_event(event, render_context)
 
         # Handle mouse button down - start selection
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
@@ -70,7 +70,6 @@ class EditField(UIElement):
                 self.cursor_pos = self._get_char_index_at_pos(event.pos)
                 self.selection_start = self.cursor_pos
                 self.mouse_down_pos = self.cursor_pos
-                handled = True
             else:
                 self.is_focused = False
                 self.selection_start = None
@@ -80,7 +79,6 @@ class EditField(UIElement):
             if self.mouse_down_pos is not None and pg.mouse.get_pressed()[0]:
                 if self.is_hovered or self.is_focused:
                     self.cursor_pos = self._get_char_index_at_pos(event.pos)
-                    handled = True
 
         # Handle mouse button up - finish selection
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
@@ -88,7 +86,6 @@ class EditField(UIElement):
                 # If no text was selected (click without drag), clear selection
                 if self.selection_start == self.cursor_pos:
                     self.selection_start = None
-                handled = True
             self.mouse_down_pos = None
 
         # Handle keyboard input only if focused
@@ -127,9 +124,6 @@ class EditField(UIElement):
                     self._cut_to_clipboard()
                 elif event.unicode and event.unicode.isprintable():
                     self._insert_text(event.unicode)
-                handled = True
-
-        return handled
 
     def _find_word_start(self, pos: int) -> int:
         """Find the start position of the word at or before the given position."""
