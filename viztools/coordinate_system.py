@@ -47,6 +47,19 @@ class CoordinateSystem:
         self.coord = self.coord @ translation_mat
         self.update_inv()
 
+    def center(self, focus_point: Tuple[int, int] | np.ndarray, screen_size: Tuple[int, int] | np.ndarray):
+        """
+        Centers the coordinate system on the given focus point.
+
+        :param focus_point: The point to center the coordinate system on with shape [2,].
+        :param screen_size: The size of the screen to center the coordinate system on.
+        """
+        focus_point = to_np_array(focus_point)
+        screen_size = to_np_array(screen_size)
+        screen_center = screen_size / 2
+        t = screen_center - self.coord[:2, :2] @ focus_point
+        self.coord[:2, 2] = t
+
     def get_zero_screen_point(self):
         """
         Get the zero point of the coordinate system in screen coordinates.

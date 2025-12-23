@@ -37,6 +37,9 @@ class Viewer(ABC):
         self.coordinate_system_controller = CoordinateSystemController(
             self.coordinate_system, drag_mouse_button=drag_mouse_button
         )
+        self.coordinate_system.center(
+            focus_point=np.array([0, 0], dtype=np.float32), screen_size=self.screen.get_size()
+        )
 
         self.render_context = RenderContext.default(font_size)
 
