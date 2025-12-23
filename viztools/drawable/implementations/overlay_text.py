@@ -1,5 +1,4 @@
 import os
-from enum import StrEnum
 
 import pygame as pg
 import numpy as np
@@ -9,23 +8,11 @@ from viztools.drawable.base_drawable import Drawable
 from viztools.utils import RenderContext
 
 
-class OverlayPosition(StrEnum):
-    TOP = 'top'
-    LEFT = 'left'
-    RIGHT = 'right'
-    BOT = 'bot'
-    RIGHTTOP = 'righttop'
-    LEFTTOP = 'lefttop'
-    LEFTBOT = 'leftbot'
-    RIGHTBOT = 'rightbot'
-
-
 class OverlayText(Drawable):
     def __init__(
             self,
             text: str,
-            position: np.ndarray | OverlayPosition,
-            absolute_position: bool = False,
+            position: np.ndarray,
             font_name: str = '',
             font_size: int | float = 16,
             color: np.ndarray | None = None,
@@ -41,7 +28,6 @@ class OverlayText(Drawable):
             If absolute_position, this is interpreted as absolute coordinates in the screen. Otherwise, it is
             interpreted as center point of the text in the coordinate system. If an OverlayPosition object is provided,
             it is always interpreted as absolute coordinates.
-        :param absolute_position: If True, the position is interpreted as absolute coordinates in the screen.
         :param font_name: The font name to use for rendering the text. If not provided, defaults to a system font.
         :param font_size: The size of the font. If an integer is provided, it is interpreted as pixels. If a float is
             provided, it is interpreted as size in world coordinates.
@@ -55,9 +41,6 @@ class OverlayText(Drawable):
         super().__init__()
         self.text = text
         self.position = position
-        if isinstance(position, OverlayPosition):
-            absolute_position = True
-        self.absolute_position = absolute_position
         if font_name:
             if not os.path.isfile(font_name):
                 font_name = pg.font.match_font(font_name)
@@ -83,30 +66,8 @@ class OverlayText(Drawable):
         combined_rect = pg.Rect(0, 0, max_width, total_height)
         padding = self.border_width * 2 if self.border_color is not None else 0
 
-        if self.absolute_position:
-            if isinstance(self.position, str):
-                if self.position == OverlayPosition.TOP:
-                    combined_rect.midtop = (screen.get_width() // 2, 0)
-                elif self.position == OverlayPosition.LEFT:
-                    combined_rect.midleft = (0, screen.get_height() // 2)
-                elif self.position == OverlayPosition.RIGHT:
-                    combined_rect.midright = (screen.get_width()-padding, screen.get_height() // 2)
-                elif self.position == OverlayPosition.BOT:
-                    combined_rect.midbottom = (screen.get_width() // 2, screen.get_height() - padding)
-                elif self.position == OverlayPosition.RIGHTTOP:
-                    combined_rect.topright = (screen.get_width() - padding, 0)
-                elif self.position == OverlayPosition.LEFTTOP:
-                    combined_rect.topleft = (0, 0)
-                elif self.position == OverlayPosition.LEFTBOT:
-                    combined_rect.bottomleft = (0, screen.get_height() - padding)
-                elif self.position == OverlayPosition.RIGHTBOT:
-                    combined_rect.bottomright = (screen.get_width() - padding, screen.get_height() - padding)
-            else:
-                top_left = self.position[:2]
-                combined_rect.topleft = (int(top_left[0]), int(top_left[1]))
-        else:
-            pos = coordinate_system.space_to_screen(self.position.reshape(2, 1)).reshape(2)
-            combined_rect.center = (int(pos[0]), int(pos[1]))
+        pos = coordinate_system.space_to_screen(self.position.reshape(2, 1)).reshape(2)
+        combined_rect.center = (int(pos[0]), int(pos[1]))
 
         # Add padding for border
         combined_rect.width += padding
