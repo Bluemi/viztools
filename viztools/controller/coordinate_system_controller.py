@@ -1,3 +1,5 @@
+from typing import Union, Container
+
 import numpy as np
 import pygame as pg
 
@@ -5,10 +7,12 @@ from viztools.coordinate_system import CoordinateSystem
 
 
 class CoordinateSystemController:
-    def __init__(self, coordinate_system: CoordinateSystem, drag_mouse_button: int = 2):
+    def __init__(self, coordinate_system: CoordinateSystem, drag_mouse_button: Union[int, Container[int]] = 2):
         self.coordinate_system = coordinate_system
         self.dragging: bool = False
         self.mouse_position = np.zeros(2, dtype=int)
+        if isinstance(drag_mouse_button, int):
+            drag_mouse_button = (drag_mouse_button,)
         self.drag_mouse_button = drag_mouse_button
 
     def handle_event(self, event: pg.event.Event) -> bool:
@@ -19,11 +23,11 @@ class CoordinateSystemController:
         """
         render_needed = False
         if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == self.drag_mouse_button:
+            if event.button in self.drag_mouse_button:
                 self.dragging = True
                 render_needed = True
         elif event.type == pg.MOUSEBUTTONUP:
-            if event.button == self.drag_mouse_button:
+            if event.button in self.drag_mouse_button:
                 self.dragging = False
                 render_needed = True
         elif event.type == pg.MOUSEMOTION:

@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Tuple, Optional, List, Union, Iterable
+from typing import Tuple, Optional, List, Union, Iterable, Container
 
 import numpy as np
 import pygame as pg
@@ -7,7 +7,7 @@ import pygame as pg
 from viztools.controller.coordinate_system_controller import CoordinateSystemController
 from viztools.coordinate_system import CoordinateSystem, draw_coordinate_system
 from viztools.drawable import Drawable
-from viztools.ui.container.base_container import Container
+from viztools.ui.container.base_container import UIContainer
 from viztools.ui.elements.base_element import UIElement
 from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
 
@@ -15,7 +15,7 @@ from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
 class Viewer(ABC):
     def __init__(
             self, screen_size: Optional[Tuple[int, int]] = None, title: str = "Visualization", framerate: int = 60,
-            font_size: int = DEFAULT_FONT_SIZE, drag_mouse_button: int = 2
+            font_size: int = DEFAULT_FONT_SIZE, drag_mouse_button: Union[int, Container[int]] = (2, 3)
     ):
         pg.init()
         pg.scrap.init()
@@ -41,16 +41,16 @@ class Viewer(ABC):
         self.render_context = RenderContext.default(font_size)
 
         self._drawable_cache: Optional[List[Drawable]] = None
-        self._ui_element_cache: Optional[List[Union[Container, UIElement]]] = None
+        self._ui_element_cache: Optional[List[Union[UIContainer, UIElement]]] = None
 
-    def iter_ui_elements(self) -> Iterable[Union[UIElement, Container]]:
+    def iter_ui_elements(self) -> Iterable[Union[UIElement, UIContainer]]:
         """
         Iter over all elements in the container.
         :return: Iterable of BaseElement objects.
         """
         if self._ui_element_cache is None:
             self._ui_element_cache = [
-                elem for elem in self.__dict__.values() if isinstance(elem, (UIElement, Container))
+                elem for elem in self.__dict__.values() if isinstance(elem, (UIElement, UIContainer))
             ]
 
         yield from self._ui_element_cache
@@ -83,7 +83,7 @@ class Viewer(ABC):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system, self.render_context)
 
-    def render_ui_elements(self, ui_elements: Iterable[Union[UIElement, Container]]):
+    def render_ui_elements(self, ui_elements: Iterable[Union[UIElement, UIContainer]]):
         for ui_element in ui_elements:
             ui_element.draw(self.screen, self.render_context)
 

@@ -6,7 +6,7 @@ from ..elements.base_element import UIElement
 from viztools.utils import RenderContext
 
 
-class Container:
+class UIContainer:
     def __init__(self, visible: bool = True):
         self.visible = visible
         self._element_cache: Optional[List[UIElement]] = None
