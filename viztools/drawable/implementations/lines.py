@@ -70,8 +70,8 @@ class Lines(Drawable):
     def handle_event(
             self, event: pg.event.Event, screen: pg.Surface, coordinate_system: CoordinateSystem,
             render_context: RenderContext
-    ) -> bool:
-        return False
+    ):
+        pass
 
     def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         pass

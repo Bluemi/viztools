@@ -214,8 +214,8 @@ class Points(Drawable):
     def handle_event(
             self, event: pg.event.Event, screen: pg.Surface, coordinate_system: CoordinateSystem,
             render_context: RenderContext
-    ) -> bool:
-        return False
+    ):
+        pass
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """
