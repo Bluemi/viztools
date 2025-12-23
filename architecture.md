@@ -1,5 +1,3 @@
-from viztools.utils import RenderContext
-
 # Architecture
 
 ## Drawables

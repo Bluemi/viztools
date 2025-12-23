@@ -47,7 +47,6 @@ class SimpleViewer(Viewer):
                     self.points.set_color(np.array([0, 255, 0, 50]), oh)
                 for hi in hovered_indices:
                     self.points.set_color(np.array([0, 255, 0, 100]), hi)
-                self.render_needed = True
 
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -66,7 +65,6 @@ class SimpleViewer(Viewer):
                 if dist < 10:
                     self.point_type[closest_point] = 2
                     self.points.set_color(np.array([255, 0, 0, 50]), closest_point)
-                self.render_needed = True
 
 
 def main():

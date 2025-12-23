@@ -23,10 +23,10 @@ class UIElement(ABC):
     ):
         """
         Handles the given events and updates the element, if needed.
-        If a redraw is necessary, sets self.render_needed to True.
+        If redrawing is necessary, sets self.render_needed to True.
 
         :param events: The events to handle.
-        :return: A list of events, that were not handled by this drawable.
+        :return: A list of events that were not handled by this drawable.
         """
         if self.visible:
             for event in events:
