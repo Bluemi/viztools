@@ -14,7 +14,15 @@ def to_np_array(p):
     return np.array(p)
 
 
-ColorType = Union[Tuple[int, int, int], pg.Color]
+Color = Union[np.ndarray, Tuple[int, int, int, int], Tuple[int, int, int]]
+
+
+def normalize_color(color: Color) -> np.ndarray:
+    if len(color) == 3:
+        return np.array([*color, 255], dtype=np.float32)
+    if len(color) != 4:
+        raise ValueError(f'color must be of length 3 or 4, not {len(color)}.')
+    return np.array(color, dtype=np.float32)
 
 
 class RenderContext:
@@ -29,26 +37,40 @@ class RenderContext:
 
 
 class Align(enum.StrEnum):
-    CENTER = "center"
-    LEFT = "left"
-    RIGHT = "right"
-    TOP = "top"
-    BOTTOM = "bottom"
+    CENTER = 'center'
+    LEFT = 'left'
+    RIGHT = 'right'
+    TOP = 'top'
+    BOTTOM = 'bottom'
+    TOP_LEFT = 'top_left'
+    TOP_RIGHT = 'top_right'
+    BOTTOM_LEFT = 'bottom_left'
+    BOTTOM_RIGHT = 'bottom_right'
 
-    def align_in(self, rect: pg.Rect, container: pg.Rect) -> pg.Rect:
+    def arrange_rect(self, rect: pg.Rect, position: Union[np.ndarray, Tuple[int, int]]) -> pg.Rect:
         new_rect = rect.copy()
+
         if self == Align.CENTER:
-            new_rect.center = container.center
+            new_rect.center = position
         elif self == Align.LEFT:
-            new_rect.midleft = container.midleft
+            new_rect.midleft = position
         elif self == Align.RIGHT:
-            new_rect.midright = container.midright
+            new_rect.midright = position
         elif self == Align.TOP:
-            new_rect.midtop = container.midtop
+            new_rect.midtop = position
         elif self == Align.BOTTOM:
-            new_rect.midbottom = container.midbottom
+            new_rect.midbottom = position
+        elif self == Align.TOP_LEFT:
+            new_rect.topleft = position
+        elif self == Align.TOP_RIGHT:
+            new_rect.topright = position
+        elif self == Align.BOTTOM_LEFT:
+            new_rect.bottomleft = position
+        elif self == Align.BOTTOM_RIGHT:
+            new_rect.bottomright = position
         else:
-            raise ValueError(f"Invalid alignment: {self}")
+            raise ValueError(f'unknown anker type: {self}')
+
         return new_rect
 
 

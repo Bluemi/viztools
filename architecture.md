@@ -8,10 +8,11 @@ The position and size is defined relative to a coordinate system, that can chang
 
 ### Using drawables
 A minimalistic example could look like this:
+
 ```python
 import pygame
 import numpy as np
-from viztools.drawable.points import Points
+from viztools.drawable.implementations.points import Points
 from viztools.coordinate_system import CoordinateSystem
 from viztools.utils import RenderContext
 

@@ -6,9 +6,8 @@ from PIL import Image as PilImage
 import pygame as pg
 import numpy as np
 
-from viztools.drawable.draw_utils import AnkerType
-from viztools.drawable.image import Image
-from viztools.drawable.lines import Lines
+from viztools.drawable import Points, Image, Lines, OverlayText
+from viztools.utils import Align
 from viztools.viewer import Viewer
 
 
@@ -19,7 +18,7 @@ class SimpleViewer(Viewer):
         for i in range(n_images):
             with PilImage.open('images/n02085936_7515.jpg') as image:
                 # image = np.array(image)
-                self.images.append(Image(image, np.array([i*6, 0]), anker_type=AnkerType.TOP))
+                self.images.append(Image(image, np.array([i*6, 0]), align=Align.TOP))
         num_lines = 10
         positions = np.random.random(size=(num_lines, 2))
         positions *= 10
@@ -28,13 +27,24 @@ class SimpleViewer(Viewer):
             color=np.array([0, 255, 0, 50]),
         )
 
+        self.points = Points(
+            np.random.normal(size=(20, 2)) * 2,
+            size=0.05,
+            color=np.array([0, 255, 0, 50]),
+            chunk_size=400.0
+        )
+
+        self.overlay_text = OverlayText(
+            'hello world', np.array([0, 1])
+        )
+
     def tick(self, delta_time: float):
-        self.update_drawables([self.lines])
+        self.update_drawables([self.lines, self.points, self.overlay_text])
         self.update_drawables(self.images)
 
     def render(self):
         self.render_coordinate_system(draw_numbers=True)
-        self.render_drawables([self.lines])
+        self.render_drawables([self.lines, self.points, self.overlay_text])
         self.render_drawables(self.images)
 
     def handle_event(self, event: pg.event.Event):

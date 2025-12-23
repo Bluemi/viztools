@@ -6,9 +6,8 @@ import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
 from viztools.drawable.base_drawable import Drawable
-from viztools.drawable.draw_utils import normalize_color
 from viztools.drawable.draw_utils.chunking import ChunkGrid
-from viztools.utils import RenderContext
+from viztools.utils import RenderContext, normalize_color
 
 
 class Points(Drawable):

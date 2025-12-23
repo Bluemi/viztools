@@ -6,7 +6,7 @@ import pygame as pg
 
 from viztools.controller.coordinate_system_controller import CoordinateSystemController
 from viztools.coordinate_system import CoordinateSystem, draw_coordinate_system
-from viztools.drawable.base_drawable import Drawable
+from viztools.drawable import Drawable
 from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
 
 

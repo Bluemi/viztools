@@ -9,14 +9,13 @@ from PIL.Image import Transpose
 
 from viztools.coordinate_system import CoordinateSystem
 from viztools.drawable.base_drawable import Drawable
-from viztools.drawable.draw_utils import AnkerType
-from viztools.utils import RenderContext
+from viztools.utils import RenderContext, Align
 
 
 class Image(Drawable):
     def __init__(
             self, image: Union[np.ndarray, PilImage.Image, str, Path], position: np.ndarray,
-            size: Union[np.ndarray, float] = 0.01, anker_type: AnkerType = AnkerType.CENTER,
+            size: Union[np.ndarray, float] = 0.01, align: Align = Align.CENTER,
             offset: Optional[np.ndarray] = None, offset_color: Optional[np.ndarray] = None
     ):
         """
@@ -26,7 +25,7 @@ class Image(Drawable):
         :param position: The position of the image as a numpy array of shape [2].
         :param size: The size of the image as a numpy array or tuple (height, width) in world coordinates,
             or it can be defined as a scale factor to original size.
-        :param anker_type: The type of anker to use.
+        :param align: The type of anker to use.
         :param offset: The offset of the image as a numpy array of shape [2].
         :param offset_color: The color of the offset as a numpy array of shape [3] or [4] (with alpha).
         """
@@ -37,7 +36,7 @@ class Image(Drawable):
         self.image_data: bytes = encode_image(image)
         self.image_surface: Optional[pg.Surface] = None
         self.position = position
-        self.anker_type = anker_type
+        self.align = align
         if isinstance(size, float):
             size = np.array(get_image_size(image)) * size
         elif isinstance(size, (tuple, np.ndarray)):
@@ -62,7 +61,7 @@ class Image(Drawable):
 
         # get target rect
         target_rect = pg.Rect(0, 0, size[1], size[0])
-        target_rect = self.anker_type.arrange_rect(target_rect, screen_points)
+        target_rect = self.align.arrange_rect(target_rect, screen_points)
 
         if target_rect.colliderect(screen.get_rect()) and np.prod(target_rect.size) < 30000000:
             self._ensure_image_surface()

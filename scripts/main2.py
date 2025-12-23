@@ -3,8 +3,7 @@
 import pygame as pg
 import numpy as np
 
-from viztools.drawable.overlay_text import OverlayText
-from viztools.drawable.points import Points
+from viztools.drawable import OverlayText, Points
 from viztools.viewer import Viewer
 
 
