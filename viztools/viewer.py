@@ -98,12 +98,12 @@ class Viewer(ABC):
 
     def handle_events(self):
         events = pg.event.get()
+        for event in events:
+            self.handle_event(event)
         for ui_element in self.iter_ui_elements():
             ui_element.handle_events(events, self.render_context)
         for drawable in self.iter_drawables():
             drawable.handle_events(events, self.screen, self.coordinate_system, self.render_context)
-        for event in events:
-            self.handle_event(event)
 
     def handle_event(self, event: pg.event.Event):
         self.coordinate_system_controller.handle_event(event)
