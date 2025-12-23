@@ -58,6 +58,8 @@ class OverlayText(Drawable):
         font_size = self.font_size
         if isinstance(font_size, float):
             font_size = int(self.font_size * coordinate_system.zoom_factor)
+        if font_size > 4000:
+            return
         font = pg.font.Font(self.font_name, font_size)
         line_dimensions = [font.size(line) for line in text_lines]
         total_height = sum(d[1] for d in line_dimensions)

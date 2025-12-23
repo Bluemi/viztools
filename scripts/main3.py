@@ -14,7 +14,7 @@ from viztools.viewer import Viewer
 
 class UIContainer(Container):
     def __init__(self):
-        super().__init__()
+        super().__init__(False)
         self.label = Label(pg.Rect(50, 100, 120, 40), "This is text :)", align=Align.LEFT)
         self.edit_field = EditField(pg.Rect(200, 50, 220, 40), "Edit me...")
         self.text_field = TextField(
@@ -42,14 +42,13 @@ class SimpleViewer(Viewer):
             chunk_size=400.0
         )
 
-        self.overlay_text = OverlayText(
-            'hello world', np.array([0, 1])
-        )
+        self.overlay_text = OverlayText('hello world', np.array([0, 1]), font_size=0.2)
+        self.overlay_text2 = OverlayText('hello world', np.array([1, 0]), font_size=20)
 
         with PilImage.open('images/n02085936_7515.jpg') as image:
             self.image = Image(image, np.array([6, 0]), align=Align.TOP)
 
-        self.button = Button(pg.Rect(50, 50, 120, 40), "Click Me!")
+        self.button = Button(pg.Rect(50, 50, 120, 40), "Open Menu")
 
         self.ui = UIContainer()
 
