@@ -120,6 +120,7 @@ class EditField(UIElement):
                     self._select_all()
                 elif event.key == pg.K_c and ctrl_pressed:
                     self._copy_to_clipboard()
+                    print('scrap')
                 elif event.key == pg.K_v and ctrl_pressed:
                     self._paste_from_clipboard()
                 elif event.key == pg.K_x and ctrl_pressed:

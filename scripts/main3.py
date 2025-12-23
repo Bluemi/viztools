@@ -47,10 +47,6 @@ class SimpleViewer(Viewer):
             "This is a long text :).\nIt supports multi-lines, copy-paste, selection, ..."
         )
 
-    def tick(self, delta_time: float):
-        self.update_drawables([self.lines, self.points, self.overlay_text])
-        self.update_drawables(self.images)
-
     def render(self):
         self.render_coordinate_system(draw_numbers=True)
         self.render_drawables([self.lines, self.points, self.overlay_text])

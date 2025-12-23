@@ -29,7 +29,6 @@ class Viewer(ABC):
         pg.display.set_caption(title)
 
         self.running = True
-        self.render_needed = True
         self.clock = pg.time.Clock()
         self.framerate = framerate
         self.mouse_pos = np.array(pg.mouse.get_pos(), dtype=np.int32)
@@ -58,9 +57,7 @@ class Viewer(ABC):
         while self.running:
             self._handle_events()
             self.tick(delta_time)
-            if self.render_needed:
-                self._render()
-                self.render_needed = False
+            self._render()
             delta_time = self.clock.tick(self.framerate)
         pg.quit()
 
@@ -74,11 +71,6 @@ class Viewer(ABC):
     def render_drawables(self, drawables: List[Drawable]):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system, self.render_context)
-
-    def update_drawables(self, drawables: List[Drawable]):
-        for drawable in drawables:
-            render_needed = drawable.update(self.screen, self.coordinate_system, self.render_context)
-            self.render_needed = self.render_needed or render_needed
 
     def render_coordinate_system(self, draw_numbers=True):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_context.font, draw_numbers=draw_numbers)
@@ -104,11 +96,8 @@ class Viewer(ABC):
 
     @abstractmethod
     def handle_event(self, event: pg.event.Event):
-        if self.coordinate_system_controller.handle_event(event):
-            self.render_needed = True
+        self.coordinate_system_controller.handle_event(event)
         if event.type == pg.MOUSEMOTION:
             self.mouse_pos = np.array(event.pos)
         if event.type == pg.QUIT:
             self.running = False
-        if event.type in (pg.WINDOWENTER, pg.WINDOWFOCUSGAINED, pg.WINDOWRESIZED):
-            self.render_needed = True

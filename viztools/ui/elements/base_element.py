@@ -39,13 +39,13 @@ class UIElement(ABC):
     def handle_event(self, event: pg.event.Event, render_context: RenderContext) -> bool:
         """
         Handle an event.
+
         :param event: The pygame event to handle
         :param render_context: The render context to use for rendering.
         """
         handled = False
         if event.type == pg.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
-            handled = True
         elif event.type == pg.MOUSEBUTTONUP:
             if self.is_hovered:
                 self.is_clicked = True
@@ -70,14 +70,9 @@ class UIElement(ABC):
         :param screen: The screen surface to draw on.
         :param render_context: The render context to use for rendering.
         """
-        self.render(screen, render_context)
+        if self.visible:
+            self.render(screen, render_context)
         self.finalize()
-
-    def finalize(self):
-        """
-        Called at the end of a frame.
-        """
-        self.is_clicked = False
 
     @abstractmethod
     def render(self, screen: pg.Surface, render_context: RenderContext):
@@ -87,6 +82,10 @@ class UIElement(ABC):
         :param screen: The screen surface to draw on.
         :param render_context: The render context to use for rendering.
         """
-        if self.visible:
-            self.draw(screen, render_context)
-        self.finalize()
+        pass
+
+    def finalize(self):
+        """
+        Called at the end of a frame.
+        """
+        self.is_clicked = False
