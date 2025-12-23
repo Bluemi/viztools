@@ -5,7 +5,8 @@ import numpy as np
 import pygame as pg
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.drawable import Drawable
+from viztools.drawable.base_drawable import Drawable
+from viztools.utils import RenderContext
 
 
 class Lines(Drawable):
@@ -16,10 +17,11 @@ class Lines(Drawable):
         :param points: Numpy array of shape [N, 2] where N is the number of points.
         :param color: The color of the lines as numpy array of shape [3] or [4] (with alpha).
         """
+        super().__init__()
         self.points = points
         self.color = color
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
+    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         screen_points = coordinate_system.space_to_screen_t(self.points)
         for p1, p2 in pairwise(screen_points):
             pg.draw.line(screen, self.color, p1, p2)
@@ -64,3 +66,12 @@ class Lines(Drawable):
         distances = np.linalg.norm(screen_points - screen_pos, axis=1)
         closest_index = np.argmin(distances)
         return int(closest_index), max(float(distances[closest_index]), 0.0)
+
+    def handle_event(
+            self, event: pg.event.Event, screen: pg.Surface, coordinate_system: CoordinateSystem,
+            render_context: RenderContext
+    ) -> bool:
+        return False
+
+    def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+        pass

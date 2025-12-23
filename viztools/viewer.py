@@ -6,16 +6,25 @@ import pygame as pg
 
 from viztools.controller.coordinate_system_controller import CoordinateSystemController
 from viztools.coordinate_system import CoordinateSystem, draw_coordinate_system
-from viztools.drawable import Drawable
+from viztools.drawable.base_drawable import Drawable
+from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
 
 
 class Viewer(ABC):
     def __init__(
-            self, screen_size: Optional[Tuple[int, int]] = None, framerate: int = 60, font_size: int = 16,
-            drag_mouse_button: int = 2
+            self, screen_size: Optional[Tuple[int, int]] = None, title: str = "Visualization", framerate: int = 60,
+            font_size: int = DEFAULT_FONT_SIZE, drag_mouse_button: int = 2
     ):
         pg.init()
+        pg.scrap.init()
         pg.key.set_repeat(130, 25)
+        mode = pg.RESIZABLE
+        if screen_size is None:
+            screen_size = (0, 0)
+        if screen_size == (0, 0):
+            mode = mode | pg.FULLSCREEN
+        self.screen = pg.display.set_mode(screen_size, mode)
+        pg.display.set_caption(title)
 
         self.running = True
         self.render_needed = True
@@ -23,19 +32,12 @@ class Viewer(ABC):
         self.framerate = framerate
         self.mouse_pos = np.array(pg.mouse.get_pos(), dtype=np.int32)
 
-        mode = pg.RESIZABLE
-        if screen_size is None:
-            screen_size = (0, 0)
-        if screen_size == (0, 0):
-            mode = mode | pg.FULLSCREEN
-        self.screen = pg.display.set_mode(screen_size, mode)
-
         self.coordinate_system = CoordinateSystem(screen_size)
         self.coordinate_system_controller = CoordinateSystemController(
             self.coordinate_system, drag_mouse_button=drag_mouse_button
         )
 
-        self.render_font = pg.font.Font(pg.font.get_default_font(), font_size)
+        self.render_context = RenderContext.default(font_size)
 
     def run(self):
         delta_time = 0
@@ -57,15 +59,15 @@ class Viewer(ABC):
 
     def render_drawables(self, drawables: List[Drawable]):
         for drawable in drawables:
-            drawable.draw(self.screen, self.coordinate_system)
+            drawable.draw(self.screen, self.coordinate_system, self.render_context)
 
     def update_drawables(self, drawables: List[Drawable]):
         for drawable in drawables:
-            render_needed = drawable.update(self.screen, self.coordinate_system)
+            render_needed = drawable.update(self.screen, self.coordinate_system, self.render_context)
             self.render_needed = self.render_needed or render_needed
 
     def render_coordinate_system(self, draw_numbers=True):
-        draw_coordinate_system(self.screen, self.coordinate_system, self.render_font, draw_numbers=draw_numbers)
+        draw_coordinate_system(self.screen, self.coordinate_system, self.render_context.font, draw_numbers=draw_numbers)
 
     def _render(self):
         self.render()

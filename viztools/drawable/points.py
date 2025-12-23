@@ -5,9 +5,10 @@ import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.drawable import Drawable
+from viztools.drawable.base_drawable import Drawable
 from viztools.drawable.draw_utils import normalize_color
 from viztools.drawable.draw_utils.chunking import ChunkGrid
+from viztools.utils import RenderContext
 
 
 class Points(Drawable):
@@ -25,6 +26,8 @@ class Points(Drawable):
         :param chunk_size: The size of the chunks in world coordinates used for rendering.
         Bigger chunks are faster for render, but can lead to lag.
         """
+        super().__init__()
+
         # points
         if not isinstance(points, np.ndarray):
             raise TypeError(f'points must be a numpy array, not {type(points)}.')
@@ -159,10 +162,10 @@ class Points(Drawable):
             return True
         return False
 
-    def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem) -> bool:
+    def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext) -> bool:
         return self.update_chunks(coordinate_system, screen.get_size())
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
+    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         # draw points in chunks
         viewport = coordinate_system.get_viewport(screen.get_size())
         chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)
@@ -208,6 +211,12 @@ class Points(Drawable):
                     left_top_screen = coordinate_system.space_to_screen_t(left_top)
                     left_top_screen = (int(left_top_screen[0, 0]), int(left_top_screen[0, 1]))
                     screen.blit(chunk_surface, left_top_screen)
+
+    def handle_event(
+            self, event: pg.event.Event, screen: pg.Surface, coordinate_system: CoordinateSystem,
+            render_context: RenderContext
+    ) -> bool:
+        return False
 
     def clicked_points(self, event: pg.event.Event, coordinate_system: CoordinateSystem) -> np.ndarray:
         """

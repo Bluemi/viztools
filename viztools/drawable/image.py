@@ -8,8 +8,9 @@ from PIL import Image as PilImage
 from PIL.Image import Transpose
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.drawable import Drawable
+from viztools.drawable.base_drawable import Drawable
 from viztools.drawable.draw_utils import AnkerType
+from viztools.utils import RenderContext
 
 
 class Image(Drawable):
@@ -29,6 +30,8 @@ class Image(Drawable):
         :param offset: The offset of the image as a numpy array of shape [2].
         :param offset_color: The color of the offset as a numpy array of shape [3] or [4] (with alpha).
         """
+        super().__init__()
+
         image = to_pil_image(image)
         image = fix_image_axis_swap(image)
         self.image_data: bytes = encode_image(image)
@@ -51,7 +54,7 @@ class Image(Drawable):
         if self.image_surface is None:
             self.image_surface = bytes_to_surf_array(self.image_data)
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
+    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         anchor_point = coordinate_system.space_to_screen_t(self.position).flatten().astype(int)
         pos = self.position + self.offset if self.offset is not None else self.position
         screen_points = coordinate_system.space_to_screen_t(pos).flatten().astype(int)
@@ -75,6 +78,17 @@ class Image(Drawable):
             self.last_size = None
             self.scaled_surface = None
             self.image_surface = None
+
+    def handle_event(
+            self, event: pg.event.Event, screen: pg.Surface, coordinate_system: CoordinateSystem,
+            render_context: RenderContext
+    ) -> bool:
+        return False
+
+    def update(
+            self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext
+    ):
+        pass
 
 
 def fix_image_axis_swap(image: Union[np.ndarray, PilImage.Image]) -> Union[np.ndarray, PilImage.Image]:

@@ -5,7 +5,8 @@ import pygame as pg
 import numpy as np
 
 from viztools.coordinate_system import CoordinateSystem
-from viztools.drawable import Drawable
+from viztools.drawable.base_drawable import Drawable
+from viztools.utils import RenderContext
 
 
 class OverlayPosition(StrEnum):
@@ -69,7 +70,7 @@ class OverlayText(Drawable):
         self.border_color = border_color
         self.border_width = border_width
 
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem):
+    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         text_lines = self.text.split('\n')
         font_size = self.font_size
         if isinstance(font_size, float):
@@ -101,7 +102,8 @@ class OverlayText(Drawable):
                 elif self.position == OverlayPosition.RIGHTBOT:
                     combined_rect.bottomright = (screen.get_width() - padding, screen.get_height() - padding)
             else:
-                combined_rect.topleft = self.position[:2]
+                top_left = self.position[:2]
+                combined_rect.topleft = (int(top_left[0]), int(top_left[1]))
         else:
             pos = coordinate_system.space_to_screen(self.position.reshape(2, 1)).reshape(2)
             combined_rect.center = (int(pos[0]), int(pos[1]))
@@ -132,3 +134,14 @@ class OverlayText(Drawable):
             line_rect.y = current_y
             screen.blit(surface, line_rect)
             current_y += line_rect.height
+
+    def handle_event(
+            self, event: pg.event.Event, screen: pg.Surface, coordinate_system: CoordinateSystem,
+            render_context: RenderContext
+    ) -> bool:
+        return False
+
+    def update(
+            self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext
+    ):
+        pass
