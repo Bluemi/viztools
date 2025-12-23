@@ -55,7 +55,7 @@ class OverlayText(Drawable):
         self.border_color = border_color
         self.border_width = border_width
 
-    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         text_lines = self.text.split('\n')
         font_size = self.font_size
         if isinstance(font_size, float):

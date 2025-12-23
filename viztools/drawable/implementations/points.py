@@ -165,7 +165,7 @@ class Points(Drawable):
     def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext) -> bool:
         return self.update_chunks(coordinate_system, screen.get_size())
 
-    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         # draw points in chunks
         viewport = coordinate_system.get_viewport(screen.get_size())
         chunk_indices = self.current_chunks.get_in_viewport_chunk_indices(viewport)

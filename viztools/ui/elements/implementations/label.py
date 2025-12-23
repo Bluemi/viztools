@@ -25,7 +25,7 @@ class Label(UIElement):
         self._text = text
         self._text_surface = None
 
-    def render(self, screen: pg.Surface, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, render_context: RenderContext):
         if self.bg_color:
             pg.draw.rect(screen, self.bg_color, self.rect)
 

@@ -28,7 +28,7 @@ class Button(UIElement):
     def handle_event(self, event: pg.event.Event, render_context: RenderContext):
         super().handle_event(event, render_context)
 
-    def render(self, screen: pg.Surface, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, render_context: RenderContext):
         # Draw button background
         if self.is_hovered:
             color = self.clicked_color if pg.mouse.get_pressed()[0] else self.hover_color

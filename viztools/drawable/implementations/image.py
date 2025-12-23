@@ -54,7 +54,7 @@ class Image(Drawable):
         if self.image_surface is None:
             self.image_surface = bytes_to_surf_array(self.image_data)
 
-    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         anchor_point = coordinate_system.space_to_screen_t(self.position).flatten().astype(int)
         pos = self.position + self.offset if self.offset is not None else self.position
         screen_points = coordinate_system.space_to_screen_t(pos).flatten().astype(int)

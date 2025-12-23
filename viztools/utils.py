@@ -1,6 +1,6 @@
 import enum
 import warnings
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
 import pygame as pg
 import numpy as np
@@ -102,7 +102,7 @@ class Align(enum.StrEnum):
         return new_rect
 
 
-def load_font(font_size: int = DEFAULT_FONT_SIZE):
+def load_font(font_size: int = DEFAULT_FONT_SIZE) -> Optional[pg.font.Font]:
     """
     Helper function to load the default font.
     :return: The font to use

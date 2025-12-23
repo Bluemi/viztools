@@ -53,7 +53,7 @@ class Drawable(ABC):
         pass
 
     @final
-    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         """
         Draws the element to the screen.
 
@@ -62,11 +62,11 @@ class Drawable(ABC):
         :param render_context: The render context used for drawing.
         """
         if self.visible:
-            self.render(screen, coordinate_system, render_context)
+            self.draw(screen, coordinate_system, render_context)
         self.finalize()
 
     @abstractmethod
-    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         """
         Draws the element to the screen.
 

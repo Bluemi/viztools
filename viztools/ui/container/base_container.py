@@ -26,7 +26,7 @@ class UIContainer:
             for elem in self.iter_elements():
                 elem.handle_events(events, render_context)
 
-    def draw(self, screen: pg.Surface, render_context: RenderContext):
+    def render(self, screen: pg.Surface, render_context: RenderContext):
         if self.visible:
             for element in self.iter_elements():
-                element.draw(screen, render_context)
+                element.render(screen, render_context)

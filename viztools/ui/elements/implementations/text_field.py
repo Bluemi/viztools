@@ -699,7 +699,7 @@ class TextField(UIElement):
         self._copy_to_clipboard()
         self._delete_selection()
 
-    def render(self, screen: pg.Surface, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, render_context: RenderContext):
         # Draw background
         if self.is_focused:
             color = self.clicked_color

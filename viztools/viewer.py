@@ -81,11 +81,11 @@ class Viewer(ABC):
 
     def render_drawables(self, drawables: Iterable[Drawable]):
         for drawable in drawables:
-            drawable.draw(self.screen, self.coordinate_system, self.render_context)
+            drawable.render(self.screen, self.coordinate_system, self.render_context)
 
     def render_ui_elements(self, ui_elements: Iterable[Union[UIElement, UIContainer]]):
         for ui_element in ui_elements:
-            ui_element.draw(self.screen, self.render_context)
+            ui_element.render(self.screen, self.render_context)
 
     def render_coordinate_system(self, draw_numbers=True):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_context.font, draw_numbers=draw_numbers)

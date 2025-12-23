@@ -22,7 +22,7 @@ class Lines(Drawable):
         self.points = points
         self.color = color
 
-    def render(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         screen_points = coordinate_system.space_to_screen_t(self.points)
         for p1, p2 in pairwise(screen_points):
             pg.draw.line(screen, self.color, p1, p2)

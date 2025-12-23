@@ -57,7 +57,7 @@ class UIElement(ABC):
         pass
 
     @final
-    def draw(self, screen: pg.Surface, render_context: RenderContext):
+    def render(self, screen: pg.Surface, render_context: RenderContext):
         """
         Draw the element to the given screen surface. Do not call this directly. Prefer render().
 
@@ -65,11 +65,11 @@ class UIElement(ABC):
         :param render_context: The render context to use for rendering.
         """
         if self.visible:
-            self.render(screen, render_context)
+            self.draw(screen, render_context)
         self.finalize()
 
     @abstractmethod
-    def render(self, screen: pg.Surface, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, render_context: RenderContext):
         """
         Draw the element to the given screen surface.
 

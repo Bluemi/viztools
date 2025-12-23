@@ -32,7 +32,7 @@ class EditField(UIElement):
         self.mouse_down_pos: Optional[int] = None  # For tracking drag selection
         self.text_offset: int = 0  # Horizontal scroll offset for text
 
-        self.font = load_font()
+        self.font: pg.font.Font = load_font()
 
     def _get_char_index_at_pos(self, pos: Tuple[int, int]) -> int:
         """Calculate the character index in text based on mouse position."""
@@ -328,7 +328,7 @@ class EditField(UIElement):
             pg.scrap.put(SCRAP_TEXT, self.text[start:end].encode('utf-8'))
             self._delete_selection()
 
-    def render(self, screen: pg.Surface, render_context: RenderContext):
+    def draw(self, screen: pg.Surface, render_context: RenderContext):
         # Draw background
         if self.is_focused:
             color = self.clicked_color
