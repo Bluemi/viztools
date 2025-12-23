@@ -17,6 +17,7 @@ class UIElement(ABC):
         self.is_clicked: bool = False
         self.render_needed: bool = True
 
+    @final
     def handle_events(
             self, events: List[pg.event.Event], render_context: RenderContext
     ):
@@ -27,9 +28,10 @@ class UIElement(ABC):
         :param events: The events to handle.
         :return: A list of events, that were not handled by this drawable.
         """
-        for event in events:
-            self.handle_event(event, render_context)
-        self.update(render_context)
+        if self.visible:
+            for event in events:
+                self.handle_event(event, render_context)
+            self.update(render_context)
 
     @abstractmethod
     def handle_event(self, event: pg.event.Event, render_context: RenderContext):

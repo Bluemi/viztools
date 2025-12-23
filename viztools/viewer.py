@@ -83,7 +83,7 @@ class Viewer(ABC):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system, self.render_context)
 
-    def render_ui_elements(self, ui_elements: Iterable[UIElement]):
+    def render_ui_elements(self, ui_elements: Iterable[Union[UIElement, Container]]):
         for ui_element in ui_elements:
             ui_element.draw(self.screen, self.render_context)
 

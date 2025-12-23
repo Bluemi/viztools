@@ -7,7 +7,8 @@ from viztools.utils import RenderContext
 
 
 class Container:
-    def __init__(self):
+    def __init__(self, visible: bool = True):
+        self.visible = visible
         self._element_cache: Optional[List[UIElement]] = None
 
     def iter_elements(self) -> Iterable[UIElement]:
@@ -21,9 +22,11 @@ class Container:
         yield from self._element_cache
 
     def handle_events(self, events: List[pg.event.Event], render_context: RenderContext):
-        for elem in self.iter_elements():
-            elem.handle_events(events, render_context)
+        if self.visible:
+            for elem in self.iter_elements():
+                elem.handle_events(events, render_context)
 
-    def render(self, screen: pg.Surface, render_context: RenderContext):
-        for element in self.iter_elements():
-            element.draw(screen, render_context)
+    def draw(self, screen: pg.Surface, render_context: RenderContext):
+        if self.visible:
+            for element in self.iter_elements():
+                element.draw(screen, render_context)

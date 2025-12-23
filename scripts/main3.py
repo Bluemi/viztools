@@ -6,9 +6,21 @@ import pygame as pg
 import numpy as np
 
 from viztools.drawable import Points, Image, Lines, OverlayText
+from viztools.ui.container.base_container import Container
 from viztools.ui.elements import Button, Label, EditField, TextField
 from viztools.utils import Align
 from viztools.viewer import Viewer
+
+
+class UIContainer(Container):
+    def __init__(self):
+        super().__init__()
+        self.label = Label(pg.Rect(50, 100, 120, 40), "This is text :)", align=Align.LEFT)
+        self.edit_field = EditField(pg.Rect(200, 50, 220, 40), "Edit me...")
+        self.text_field = TextField(
+            pg.Rect(200, 100, 520, 440),
+            "This is a long text :).\nIt supports multi-lines, copy-paste, selection, ..."
+        )
 
 
 class SimpleViewer(Viewer):
@@ -38,16 +50,12 @@ class SimpleViewer(Viewer):
             self.image = Image(image, np.array([6, 0]), align=Align.TOP)
 
         self.button = Button(pg.Rect(50, 50, 120, 40), "Click Me!")
-        self.label = Label(pg.Rect(50, 100, 120, 40), "This is text :)", align=Align.LEFT)
-        self.edit_field = EditField(pg.Rect(200, 50, 220, 40), "Edit me...")
-        self.text_field = TextField(
-            pg.Rect(200, 100, 520, 440),
-            "This is a long text :).\nIt supports multi-lines, copy-paste, selection, ..."
-        )
+
+        self.ui = UIContainer()
 
     def update(self):
         if self.button.is_clicked:
-            print('button clicked')
+            self.ui.visible = not self.ui.visible
 
 
 def main():
