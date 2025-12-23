@@ -33,10 +33,6 @@ class SimpleViewer(Viewer):
             border_color=np.array([80, 80, 80, 128]),
         )
 
-    def render(self):
-        self.render_coordinate_system(draw_numbers=False)
-        self.render_drawables([self.points, self.overlay_text])
-
     def handle_event(self, event: pg.event.Event):
         super().handle_event(event)
         if event.type == pg.MOUSEMOTION:

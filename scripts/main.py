@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import pygame as pg
 import numpy as np
 
 from viztools.drawable.implementations.overlay_text import OverlayText
@@ -44,15 +43,8 @@ class SimpleViewer(Viewer):
             border_color=np.array([80, 80, 80, 128]),
         )
 
-    def update(self, delta_time: float):
-        self.update_drawables([self.points])
-
-    def render(self):
-        self.render_coordinate_system(draw_numbers=True)
-        self.render_drawables([self.points, self.overlay_text])
-
-    def handle_event(self, event: pg.event.Event):
-        super().handle_event(event)
+    # def handle_event(self, event: pg.event.Event):
+        # super().handle_event(event)
         # if event.type == pg.MOUSEMOTION:
         #     clicked_indices = np.nonzero(np.equal(self.point_type, 2))[0]
         #     old_hovered = np.nonzero(np.equal(self.point_type, 1))[0]
