@@ -13,7 +13,7 @@ from viztools.utils import RenderContext, normalize_color
 class Points(Drawable):
     def __init__(
             self, points: np.ndarray, size: int | float | Iterable[int | float] = 3,
-            color: Optional[np.ndarray] = None, chunk_size: float = 200.0,
+            color: Optional[np.ndarray] = None, chunk_size: float = 200.0, visible: bool = True,
     ):
         """
         Drawable to display a set of points.
@@ -23,9 +23,10 @@ class Points(Drawable):
                      it contains the sizes for each point.
         :param color: The color of the points.
         :param chunk_size: The size of the chunks in world coordinates used for rendering.
-        Bigger chunks are faster for render, but can lead to lag.
+            Bigger chunks are faster for render, but can lead to lag.
+        :param visible: If False, the points are not rendered.
         """
-        super().__init__()
+        super().__init__(visible)
 
         # points
         if not isinstance(points, np.ndarray):

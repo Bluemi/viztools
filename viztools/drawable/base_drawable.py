@@ -8,8 +8,8 @@ from viztools.utils import RenderContext
 
 
 class Drawable(ABC):
-    def __init__(self):
-        self.render_needed = True
+    def __init__(self, visible: bool = True):
+        self.visible = visible
 
     @final
     def handle_events(
@@ -18,15 +18,15 @@ class Drawable(ABC):
     ):
         """
         Handles the given events and updates the element, if needed.
-        If a redraw is necessary, sets self.render_needed to True.
 
         :param events: The events to handle.
         :param screen: The screen that will be used for drawing.
         :param coordinate_system: The coordinate system, this drawable is rendered in.
         """
-        for event in events:
-            self.handle_event(event, screen, coordinate_system, render_context)
-        self.update(screen, coordinate_system, render_context)
+        if self.visible:
+            for event in events:
+                self.handle_event(event, screen, coordinate_system, render_context)
+            self.update(screen, coordinate_system, render_context)
 
     @abstractmethod
     def handle_event(
@@ -45,7 +45,7 @@ class Drawable(ABC):
     @abstractmethod
     def update(self, screen: pg.Surface, coordinate_system: CoordinateSystem, render_context: RenderContext):
         """
-        Updates the element. Also sets self.render_needed to True, if needed.
+        Updates the element.
 
         :param screen: The screen that will be used for drawing.
         :param coordinate_system: The coordinate system, this drawable is rendered in.
@@ -61,7 +61,8 @@ class Drawable(ABC):
         :param coordinate_system: The coordinate system, this drawable is rendered in.
         :param render_context: The render context used for drawing.
         """
-        self.render(screen, coordinate_system, render_context)
+        if self.visible:
+            self.render(screen, coordinate_system, render_context)
         self.finalize()
 
     @abstractmethod

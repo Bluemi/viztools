@@ -18,7 +18,8 @@ class OverlayText(Drawable):
             color: np.ndarray | None = None,
             background_color: np.ndarray | None = None,
             border_color: np.ndarray | None = None,
-            border_width: int = 2
+            border_width: int = 2,
+            visible: bool = True,
     ):
         """
         Creates an overlay text.
@@ -37,8 +38,9 @@ class OverlayText(Drawable):
         :param border_color: The color of the border around the text as a NumPy array. If
             None, no border will be rendered.
         :param border_width: The width of the border around the text, in pixels.
+        :param visible: Whether the overlay is visible.
         """
-        super().__init__()
+        super().__init__(visible)
         self.text = text
         self.position = position
         if font_name:

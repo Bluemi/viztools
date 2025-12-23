@@ -10,14 +10,15 @@ from viztools.utils import RenderContext
 
 
 class Lines(Drawable):
-    def __init__(self, points: np.ndarray, color: np.ndarray = None):
+    def __init__(self, points: np.ndarray, color: np.ndarray = None, visible: bool = True):
         """
         Initializes a list of lines.
 
         :param points: Numpy array of shape [N, 2] where N is the number of points.
         :param color: The color of the lines as numpy array of shape [3] or [4] (with alpha).
+        :param visible: Whether the lines are visible.
         """
-        super().__init__()
+        super().__init__(visible)
         self.points = points
         self.color = color
 

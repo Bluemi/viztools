@@ -16,7 +16,7 @@ class Image(Drawable):
     def __init__(
             self, image: Union[np.ndarray, PilImage.Image, str, Path], position: np.ndarray,
             size: Union[np.ndarray, float] = 0.01, align: Align = Align.CENTER,
-            offset: Optional[np.ndarray] = None, offset_color: Optional[np.ndarray] = None
+            offset: Optional[np.ndarray] = None, offset_color: Optional[np.ndarray] = None, visible: bool = True
     ):
         """
         Initializes a list of lines.
@@ -28,8 +28,9 @@ class Image(Drawable):
         :param align: The type of anker to use.
         :param offset: The offset of the image as a numpy array of shape [2].
         :param offset_color: The color of the offset as a numpy array of shape [3] or [4] (with alpha).
+        :param visible: Whether the image is visible.
         """
-        super().__init__()
+        super().__init__(visible)
 
         image = to_pil_image(image)
         image = fix_image_axis_swap(image)
