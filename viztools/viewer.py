@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC
 from typing import Tuple, Optional, List, Union, Iterable
 
 import numpy as np
@@ -40,61 +40,77 @@ class Viewer(ABC):
 
         self.render_context = RenderContext.default(font_size)
 
-        self._element_cache: Optional[List[Union[Container, UIElement]]] = None
+        self._drawable_cache: Optional[List[Drawable]] = None
+        self._ui_element_cache: Optional[List[Union[Container, UIElement]]] = None
 
-    def iter_elements(self) -> Iterable[Union[UIElement, Container]]:
+    def iter_ui_elements(self) -> Iterable[Union[UIElement, Container]]:
         """
         Iter over all elements in the container.
         :return: Iterable of BaseElement objects.
         """
-        if self._element_cache is None:
-            self._element_cache = [elem for elem in self.__dict__.values() if isinstance(elem, (UIElement, Container))]
+        if self._ui_element_cache is None:
+            self._ui_element_cache = [
+                elem for elem in self.__dict__.values() if isinstance(elem, (UIElement, Container))
+            ]
 
-        yield from self._element_cache
+        yield from self._ui_element_cache
+
+    def iter_drawables(self) -> Iterable[Drawable]:
+        """
+        Iter over all elements in the container.
+        :return: Iterable of BaseElement objects.
+        """
+        if self._drawable_cache is None:
+            self._drawable_cache = [elem for elem in self.__dict__.values() if isinstance(elem, Drawable)]
+
+        yield from self._drawable_cache
 
     def run(self):
-        delta_time = 0
         while self.running:
-            self._handle_events()
-            self.tick(delta_time)
-            self._render()
-            delta_time = self.clock.tick(self.framerate)
+            self.handle_events()
+            self.update()
+            self.render()
+            self.clock.tick(self.framerate)
         pg.quit()
 
-    def tick(self, delta_time: float):
-        pass
+    def render_content(self):
+        self.render_drawables(self.iter_drawables())
 
-    @abstractmethod
-    def render(self):
-        pass
+    def render_ui(self):
+        self.render_ui_elements(self.iter_ui_elements())
 
-    def render_drawables(self, drawables: List[Drawable]):
+    def render_drawables(self, drawables: Iterable[Drawable]):
         for drawable in drawables:
             drawable.draw(self.screen, self.coordinate_system, self.render_context)
+
+    def render_ui_elements(self, ui_elements: Iterable[UIElement]):
+        for ui_element in ui_elements:
+            ui_element.draw(self.screen, self.render_context)
 
     def render_coordinate_system(self, draw_numbers=True):
         draw_coordinate_system(self.screen, self.coordinate_system, self.render_context.font, draw_numbers=draw_numbers)
 
-    def _render(self):
-        self.render()
-        self.render_ui_elements()
+    def render(self):
+        self.render_coordinate_system(draw_numbers=True)
+        self.render_content()
+        self.render_ui()
         pg.display.flip()
 
-    def _handle_events(self):
+    def handle_events(self):
         events = pg.event.get()
-        for ui_element in self.iter_elements():
+        for ui_element in self.iter_ui_elements():
             ui_element.handle_events(events, self.render_context)
+        for drawable in self.iter_drawables():
+            drawable.handle_events(events, self.screen, self.coordinate_system, self.render_context)
         for event in events:
             self.handle_event(event)
 
-    def render_ui_elements(self):
-        for ui_element in self.iter_elements():
-            ui_element.draw(self.screen, self.render_context)
-
-    @abstractmethod
     def handle_event(self, event: pg.event.Event):
         self.coordinate_system_controller.handle_event(event)
         if event.type == pg.MOUSEMOTION:
             self.mouse_pos = np.array(event.pos)
         if event.type == pg.QUIT:
             self.running = False
+
+    def update(self):
+        pass

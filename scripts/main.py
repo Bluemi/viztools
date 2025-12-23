@@ -44,7 +44,7 @@ class SimpleViewer(Viewer):
             border_color=np.array([80, 80, 80, 128]),
         )
 
-    def tick(self, delta_time: float):
+    def update(self, delta_time: float):
         self.update_drawables([self.points])
 
     def render(self):
