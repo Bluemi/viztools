@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, Union, Iterable
 
 import numpy as np
 import pygame as pg
@@ -7,6 +7,8 @@ import pygame as pg
 from viztools.controller.coordinate_system_controller import CoordinateSystemController
 from viztools.coordinate_system import CoordinateSystem, draw_coordinate_system
 from viztools.drawable import Drawable
+from viztools.ui.container.base_container import Container
+from viztools.ui.elements.base_element import UIElement
 from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
 
 
@@ -38,6 +40,18 @@ class Viewer(ABC):
         )
 
         self.render_context = RenderContext.default(font_size)
+
+        self._element_cache: Optional[List[Union[Container, UIElement]]] = None
+
+    def iter_elements(self) -> Iterable[Union[UIElement, Container]]:
+        """
+        Iter over all elements in the container.
+        :return: Iterable of BaseElement objects.
+        """
+        if self._element_cache is None:
+            self._element_cache = [elem for elem in self.__dict__.values() if isinstance(elem, (UIElement, Container))]
+
+        yield from self._element_cache
 
     def run(self):
         delta_time = 0
@@ -71,12 +85,22 @@ class Viewer(ABC):
 
     def _render(self):
         self.render()
+        self.render_ui_elements()
         pg.display.flip()
 
     def _handle_events(self):
         events = pg.event.get()
         for event in events:
             self.handle_event(event)
+        self.update_ui_elements(events)
+
+    def update_ui_elements(self, events: List[pg.event.Event]):
+        for ui_element in self.iter_elements():
+            events = ui_element.handle_events(events, self.render_context)
+
+    def render_ui_elements(self):
+        for ui_element in self.iter_elements():
+            ui_element.draw(self.screen, self.render_context)
 
     @abstractmethod
     def handle_event(self, event: pg.event.Event):

@@ -7,6 +7,7 @@ import pygame as pg
 import numpy as np
 
 from viztools.drawable import Points, Image, Lines, OverlayText
+from viztools.ui.elements import Button, Label, EditField, TextField
 from viztools.utils import Align
 from viztools.viewer import Viewer
 
@@ -36,6 +37,14 @@ class SimpleViewer(Viewer):
 
         self.overlay_text = OverlayText(
             'hello world', np.array([0, 1])
+        )
+
+        self.button = Button(pg.Rect(50, 50, 120, 40), "Click Me!")
+        self.label = Label(pg.Rect(50, 100, 120, 40), "This is text :)", align=Align.LEFT)
+        self.edit_field = EditField(pg.Rect(200, 50, 220, 40), "Edit me...")
+        self.text_field = TextField(
+            pg.Rect(200, 100, 520, 440),
+            "This is a long text :).\nIt supports multi-lines, copy-paste, selection, ..."
         )
 
     def tick(self, delta_time: float):

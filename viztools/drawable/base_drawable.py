@@ -9,7 +9,7 @@ from viztools.utils import RenderContext
 
 class Drawable(ABC):
     def __init__(self):
-        self.render_needed = False
+        self.render_needed = True
 
     def handle_events(
             self, events: List[pg.event.Event], screen: pg.Surface, coordinate_system: CoordinateSystem,

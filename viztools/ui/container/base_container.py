@@ -1,0 +1,30 @@
+from typing import Iterable, Optional, List
+
+import pygame as pg
+
+from ..elements.base_element import UIElement
+from viztools.utils import RenderContext
+
+
+class Container:
+    def __init__(self):
+        self._element_cache: Optional[List[UIElement]] = None
+
+    def iter_elements(self) -> Iterable[UIElement]:
+        """
+        Iter over all elements in the container.
+        :return: Iterable of BaseElement objects.
+        """
+        if self._element_cache is None:
+            self._element_cache = [elem for elem in self.__dict__.values() if isinstance(elem, UIElement)]
+
+        yield from self._element_cache
+
+    def handle_events(self, events: List[pg.event.Event], render_context: RenderContext) -> List[pg.event.Event]:
+        for elem in self.iter_elements():
+            events = elem.handle_events(events, render_context)
+        return events
+
+    def render(self, screen: pg.Surface, render_context: RenderContext):
+        for element in self.iter_elements():
+            element.draw(screen, render_context)

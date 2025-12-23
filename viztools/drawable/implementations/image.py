@@ -61,7 +61,7 @@ class Image(Drawable):
 
         # get target rect
         target_rect = pg.Rect(0, 0, size[1], size[0])
-        target_rect = self.align.arrange_rect(target_rect, screen_points)
+        target_rect = self.align.arrange_by_anker(target_rect, screen_points)
 
         if target_rect.colliderect(screen.get_rect()) and np.prod(target_rect.size) < 30000000:
             self._ensure_image_surface()

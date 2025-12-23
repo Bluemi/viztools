@@ -47,30 +47,58 @@ class Align(enum.StrEnum):
     BOTTOM_LEFT = 'bottom_left'
     BOTTOM_RIGHT = 'bottom_right'
 
-    def arrange_rect(self, rect: pg.Rect, position: Union[np.ndarray, Tuple[int, int]]) -> pg.Rect:
-        new_rect = rect.copy()
-
+    def set_rect(self, rect: pg.Rect, position: Tuple[int, int]):
         if self == Align.CENTER:
-            new_rect.center = position
+            rect.center = position
         elif self == Align.LEFT:
-            new_rect.midleft = position
+            rect.midleft = position
         elif self == Align.RIGHT:
-            new_rect.midright = position
+            rect.midright = position
         elif self == Align.TOP:
-            new_rect.midtop = position
+            rect.midtop = position
         elif self == Align.BOTTOM:
-            new_rect.midbottom = position
+            rect.midbottom = position
         elif self == Align.TOP_LEFT:
-            new_rect.topleft = position
+            rect.topleft = position
         elif self == Align.TOP_RIGHT:
-            new_rect.topright = position
+            rect.topright = position
         elif self == Align.BOTTOM_LEFT:
-            new_rect.bottomleft = position
+            rect.bottomleft = position
         elif self == Align.BOTTOM_RIGHT:
-            new_rect.bottomright = position
+            rect.bottomright = position
         else:
             raise ValueError(f'unknown anker type: {self}')
 
+    def get_pos(self, rect: pg.Rect) -> Tuple[int, int]:
+        if self == Align.CENTER:
+            return rect.center
+        elif self == Align.LEFT:
+            return rect.midleft
+        elif self == Align.RIGHT:
+            return rect.midright
+        elif self == Align.TOP:
+            return rect.midtop
+        elif self == Align.BOTTOM:
+            return rect.midbottom
+        elif self == Align.TOP_LEFT:
+            return rect.topleft
+        elif self == Align.TOP_RIGHT:
+            return rect.topright
+        elif self == Align.BOTTOM_LEFT:
+            return rect.bottomleft
+        elif self == Align.BOTTOM_RIGHT:
+            return rect.bottomright
+        else:
+            raise ValueError(f'unknown anker type: {self}')
+
+    def arrange_by_anker(self, rect: pg.Rect, anker: Union[np.ndarray, Tuple[int, int]]) -> pg.Rect:
+        new_rect = rect.copy()
+        self.set_rect(new_rect, anker)
+        return new_rect
+
+    def arrange_in_rect(self, rect: pg.Rect, container: pg.Rect) -> pg.Rect:
+        new_rect = rect.copy()
+        self.set_rect(new_rect, self.get_pos(container))
         return new_rect
 
 
