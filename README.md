@@ -1,7 +1,7 @@
 # viztools
 Interactive tools to visualize data in python using pygame.
 
-![screenshot](screenshots/screenshot1.png)
+![screenshot](https://github.com/Bluemi/viztools/blob/main/screenshots/screenshot1.png)
 *The Image in the screenshot: [Mainichi Shimbun, Public domain, via Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Soba-Noodles-Deliveryman-Tokyo-1935.png)*
 
 ## Installation
