@@ -57,7 +57,7 @@ class SimpleViewer(Viewer):
             with PilImage.open(path) as image:
                 self.image = Image(image, np.array([6, 0]), size=0.005, align=Align.TOP, visible=False)
         else:
-            print(f'Image file not found: {path}', file=sys.stderr)
+            self.image = OverlayText(f'Image file not found: {path}', np.array([6, -0.5]), font_size=32, visible=False)
         self.image_caption = OverlayText('Noodle Deliveryman', np.array([6, 0.2]), font_size=0.2, visible=False)
 
         self.button = Button(pg.Rect(50, 50, 120, 40), "Open Menu")
@@ -68,8 +68,9 @@ class SimpleViewer(Viewer):
         if self.button.is_clicked:
             self.menu.visible = not self.menu.visible
         if self.menu.btn_show_image.is_clicked:
-            self.image.visible = not self.image.visible
-            self.image_caption.visible = self.image.visible
+            if self.image is not None:
+                self.image.visible = not self.image.visible
+                self.image_caption.visible = self.image.visible
 
 
 def main():
