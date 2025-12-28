@@ -15,7 +15,8 @@ from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
 class Viewer(ABC):
     def __init__(
             self, screen_size: Optional[Tuple[int, int]] = None, title: str = "Visualization", framerate: float = 60.0,
-            font_size: int = DEFAULT_FONT_SIZE, drag_mouse_button: Union[int, Container[int]] = (2, 3)
+            default_font_name: Optional[str] = None, default_font_size: int = DEFAULT_FONT_SIZE,
+            drag_mouse_button: Union[int, Container[int]] = (2, 3)
     ):
         pg.init()
         pg.scrap.init()
@@ -41,7 +42,7 @@ class Viewer(ABC):
             focus_point=np.array([0, 0], dtype=np.float32), screen_size=self.screen.get_size()
         )
 
-        self.render_context = RenderContext.default(font_size)
+        self.render_context = RenderContext(default_font_name, default_font_size)
 
         self._drawable_cache: Optional[List[Drawable]] = None
         self._ui_element_cache: Optional[List[Union[UIContainer, UIElement]]] = None
@@ -91,7 +92,9 @@ class Viewer(ABC):
             ui_element.render(self.screen, self.render_context)
 
     def render_coordinate_system(self, draw_numbers=True):
-        draw_coordinate_system(self.screen, self.coordinate_system, self.render_context.font, draw_numbers=draw_numbers)
+        draw_coordinate_system(
+            self.screen, self.coordinate_system, self.render_context.get_font(), draw_numbers=draw_numbers
+        )
 
     def render(self):
         self.render_coordinate_system(draw_numbers=True)

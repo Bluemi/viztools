@@ -11,7 +11,7 @@ class Button(UIElement):
             self, rect: pg.Rect, text: str = "",
             bg_color: Color = (180, 180, 180), hover_color: Color = (195, 195, 195),
             clicked_color: Color = (220, 220, 220), border_color: Color = (100, 100, 100),
-            text_color: Color = (10, 10, 10)
+            text_color: Color = (10, 10, 10), font_name: Optional[str] = None, font_size: int = -1,
     ):
         super().__init__(rect)
         self.text = text
@@ -22,6 +22,9 @@ class Button(UIElement):
         self.border_color = border_color
         self.text_color = text_color
         self.border_width = 2
+
+        self.font_name = font_name
+        self.font_size = font_size
 
         self.text_surface: Optional[pg.Surface] = None
 
@@ -42,7 +45,8 @@ class Button(UIElement):
         # Render text
         if self.text:
             if self.text_surface is None:
-                self.text_surface = render_context.font.render(self.text, True, self.text_color)
+                font = render_context.get_font(self.font_name, self.font_size)
+                self.text_surface = font.render(self.text, True, self.text_color)
             text_rect = self.text_surface.get_rect(center=self.rect.center)
             screen.blit(self.text_surface, text_rect)
 

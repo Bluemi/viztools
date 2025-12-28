@@ -3,7 +3,7 @@ from typing import Optional, Tuple, List, Union, Iterable
 import pygame as pg
 
 from ..base_element import UIElement
-from viztools.utils import RenderContext, Color, load_font
+from viztools.utils import RenderContext, Color
 
 SCRAP_TEXT = 'text/plain;charset=utf-8'
 
@@ -207,7 +207,7 @@ class TextField(UIElement):
             self, rect: pg.Rect, text: str = "", placeholder: str = "",
             bg_color: Color = (40, 40, 40), hover_color: Color = (50, 50, 50),
             clicked_color: Color = (60, 60, 60), border_color: Color = (120, 120, 120),
-            text_color: Color = (200, 200, 200)
+            text_color: Color = (200, 200, 200), font_name: Optional[str] = None, font_size: int = -1
     ):
         super().__init__(rect)
         self.lines: List[Line] = []
@@ -227,10 +227,17 @@ class TextField(UIElement):
         self.mouse_down: bool = False  # For tracking drag selection
         self.scroll_offset: int = 0  # Vertical scroll offset (in lines)
 
-        self.font = load_font()
-        self.line_height = self.font.get_height() if self.font else 20
+        self.font: Optional[pg.font.Font] = None
+        self.font_name = font_name
+        self.font_size = font_size
+        self.line_height = None
+        self._start_text = text
 
-        self.set_text(text)
+    def _ensure_init(self, render_context: RenderContext):
+        if self.font is None:
+            self.font = render_context.get_font(self.font_name, self.font_size)
+            self.line_height = self.font.get_height()
+            self.set_text(self._start_text)
 
     def set_text(self, text: str):
         self.lines = [Line(l) for l in text.split('\n')]
@@ -320,6 +327,8 @@ class TextField(UIElement):
 
     def handle_event(self, event: pg.event.Event, render_context: RenderContext):
         super().handle_event(event, render_context)
+
+        self._ensure_init(render_context)
 
         # Handle mouse button down - start selection
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
@@ -700,6 +709,8 @@ class TextField(UIElement):
         self._delete_selection()
 
     def draw(self, screen: pg.Surface, render_context: RenderContext):
+        self._ensure_init(render_context)
+
         # Draw background
         if self.is_focused:
             color = self.clicked_color

@@ -1,6 +1,6 @@
 import enum
 import warnings
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Optional, Dict
 
 import pygame as pg
 import numpy as np
@@ -26,14 +26,25 @@ def normalize_color(color: Color) -> np.ndarray:
 
 
 class RenderContext:
-    def __init__(self, font: pg.font.Font):
-        self.font = font
+    def __init__(self, default_font_name: Optional[str] = None, default_font_size: int = DEFAULT_FONT_SIZE):
+        if default_font_name is None:
+            default_font_name = pg.font.get_default_font()
+        self.default_font_name = default_font_name
+        self.default_font_size = default_font_size
+        self.font_cache: Dict[Tuple[str, int], pg.font.Font] = {}
         self.mouse_pressed = False
 
-    @staticmethod
-    def default(font_size: int = DEFAULT_FONT_SIZE):
-        font = load_font(font_size)
-        return RenderContext(font)
+    def get_font(self, font_name: Optional[str] = None, font_size: int = -1) -> pg.font.Font:
+        if font_name is None:
+            font_name = self.default_font_name
+        if font_size == -1:
+            font_size = self.default_font_size
+
+        key = (font_name, font_size)
+
+        if key not in self.font_cache:
+            self.font_cache[key] = pg.font.Font(font_name, font_size)
+        return self.font_cache[key]
 
 
 class Align(enum.StrEnum):
@@ -102,16 +113,16 @@ class Align(enum.StrEnum):
         return new_rect
 
 
-def load_font(font_size: int = DEFAULT_FONT_SIZE) -> Optional[pg.font.Font]:
+def load_font(font_name: Optional[str] = None, font_size: int = DEFAULT_FONT_SIZE) -> pg.font.Font:
     """
     Helper function to load the default font.
     :return: The font to use
     """
     try:
-        font = pg.font.Font(None, font_size)
+        font = pg.font.Font(font_name, font_size)
     except pg.error:
-        warnings.warn("Warning: Could not load default font. Text will not be rendered.")
-        font = None
+        warnings.warn("Warning: Could not load font. Falling back to default font.")
+        font = pg.font.Font(None, font_size)
     return font
 
 
