@@ -47,6 +47,9 @@ class Viewer(ABC):
         self._drawable_cache: Optional[List[Drawable]] = None
         self._ui_element_cache: Optional[List[Union[UIContainer, UIElement]]] = None
 
+    def update_ui_elements(self):
+        self._ui_element_cache = None
+
     def iter_ui_elements(self) -> Iterable[Union[UIElement, UIContainer]]:
         """
         Iter over all elements in the container.
@@ -58,6 +61,9 @@ class Viewer(ABC):
             ]
 
         yield from self._ui_element_cache
+
+    def update_drawables(self):
+        self._drawable_cache = None
 
     def iter_drawables(self) -> Iterable[Drawable]:
         """

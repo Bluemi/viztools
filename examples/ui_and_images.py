@@ -8,7 +8,7 @@ import numpy as np
 
 from viztools.drawable import Points, Image, Lines, OverlayText
 from viztools.ui.container.base_container import UIContainer
-from viztools.ui.elements import Button, Label, EditField, TextField, CheckBox
+from viztools.ui.elements import Button, Label, EditField, TextField, CheckBox, Slider
 from viztools.utils import Align
 from viztools.viewer import Viewer
 
@@ -18,17 +18,18 @@ class Menu(UIContainer):
         super().__init__(False)
         self.label = Label(pg.Rect(50, 100, 120, 40), "Show image:", align=Align.RIGHT)
         self.checkbox_show_image = CheckBox(pg.Rect(180, 100, 30, 30))
-        self.edit_field = EditField(pg.Rect(50, 150, 220, 40), "Edit me...")
+        self.slider = Slider(pg.Rect(50, 150, 300, 30), value=4, min_val=3.0)
+        self.edit_field = EditField(pg.Rect(50, 200, 220, 40), "Edit me...")
         self.text_field = TextField(
-            pg.Rect(50, 200, 520, 440),
+            pg.Rect(50, 250, 520, 440),
             "This is a long text :).\nIt supports multi-lines, copy-paste, selection, ..."
         )
 
 
-def create_line_points() -> np.ndarray:
+def create_line_points(circles: float = 4.0) -> np.ndarray:
     """Create a spiral pattern with varying radius"""
     n = 200
-    t = np.linspace(0, 4 * np.pi, n)
+    t = np.linspace(0, circles * np.pi, n)
     radius = np.linspace(0.01, 3, n)
     x = radius * np.cos(t)
     y = radius * np.sin(t)
@@ -70,6 +71,12 @@ class SimpleViewer(Viewer):
             if self.image is not None:
                 self.image.visible = self.menu.checkbox_show_image.checked
                 self.image_caption.visible = self.image.visible
+        if self.menu.slider.has_changed:
+            self.lines = Lines(
+                create_line_points(self.menu.slider.value),
+                color=np.array([0, 80, 80]),
+            )
+            self.update_drawables()
 
 
 def main():
