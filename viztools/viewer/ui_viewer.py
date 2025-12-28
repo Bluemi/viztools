@@ -12,7 +12,8 @@ from viztools.utils import RenderContext, DEFAULT_FONT_SIZE, Color
 class UIViewer(ABC):
     def __init__(
             self, screen_size: Optional[Tuple[int, int]] = None, title: str = "Visualization", framerate: float = 60.0,
-            font_size: int = DEFAULT_FONT_SIZE, background_color: Color = (20, 20, 20)
+            default_font_name: Optional[str] = None, default_font_size: int = DEFAULT_FONT_SIZE,
+            background_color: Color = (20, 20, 20)
     ):
         pg.init()
         pg.scrap.init()
@@ -30,7 +31,7 @@ class UIViewer(ABC):
         self.framerate = framerate
         self.mouse_pos = np.array(pg.mouse.get_pos(), dtype=np.int32)
 
-        self.render_context = RenderContext.default(font_size)
+        self.render_context = RenderContext(default_font_name, default_font_size)
         self.background_color = background_color
 
         self._ui_element_cache: Optional[List[Union[UIContainer, UIElement]]] = None
