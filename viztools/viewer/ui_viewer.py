@@ -6,13 +6,13 @@ import pygame as pg
 
 from viztools.ui.container.base_container import UIContainer
 from viztools.ui.elements.base_element import UIElement
-from viztools.utils import RenderContext, DEFAULT_FONT_SIZE
+from viztools.utils import RenderContext, DEFAULT_FONT_SIZE, Color
 
 
 class UIViewer(ABC):
     def __init__(
             self, screen_size: Optional[Tuple[int, int]] = None, title: str = "Visualization", framerate: float = 60.0,
-            font_size: int = DEFAULT_FONT_SIZE
+            font_size: int = DEFAULT_FONT_SIZE, background_color: Color = (20, 20, 20)
     ):
         pg.init()
         pg.scrap.init()
@@ -31,6 +31,7 @@ class UIViewer(ABC):
         self.mouse_pos = np.array(pg.mouse.get_pos(), dtype=np.int32)
 
         self.render_context = RenderContext.default(font_size)
+        self.background_color = background_color
 
         self._ui_element_cache: Optional[List[Union[UIContainer, UIElement]]] = None
 
@@ -62,6 +63,7 @@ class UIViewer(ABC):
             ui_element.render(self.screen, self.render_context)
 
     def render(self):
+        self.screen.fill(self.background_color)
         self.render_ui()
         pg.display.flip()
 
