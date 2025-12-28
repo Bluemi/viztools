@@ -8,7 +8,7 @@ import numpy as np
 
 from viztools.drawable import Points, Image, Lines, OverlayText
 from viztools.ui.container.base_container import UIContainer
-from viztools.ui.elements import Button, Label, EditField, TextField
+from viztools.ui.elements import Button, Label, EditField, TextField, CheckBox
 from viztools.utils import Align
 from viztools.viewer import Viewer
 
@@ -16,13 +16,13 @@ from viztools.viewer import Viewer
 class Menu(UIContainer):
     def __init__(self):
         super().__init__(False)
-        self.label = Label(pg.Rect(50, 100, 120, 40), "This is text :)", align=Align.LEFT)
-        self.edit_field = EditField(pg.Rect(200, 50, 220, 40), "Edit me...")
+        self.label = Label(pg.Rect(50, 100, 120, 40), "Show image:", align=Align.RIGHT)
+        self.checkbox_show_image = CheckBox(pg.Rect(180, 100, 30, 30))
+        self.edit_field = EditField(pg.Rect(50, 150, 220, 40), "Edit me...")
         self.text_field = TextField(
-            pg.Rect(200, 100, 520, 440),
+            pg.Rect(50, 200, 520, 440),
             "This is a long text :).\nIt supports multi-lines, copy-paste, selection, ..."
         )
-        self.btn_show_image = Button(pg.Rect(50, 150, 120, 40), "Show Image")
 
 
 def create_line_points() -> np.ndarray:
@@ -66,9 +66,9 @@ class SimpleViewer(Viewer):
     def update(self):
         if self.button.is_clicked:
             self.menu.visible = not self.menu.visible
-        if self.menu.btn_show_image.is_clicked:
+        if self.menu.checkbox_show_image.checked != self.image.visible:
             if self.image is not None:
-                self.image.visible = not self.image.visible
+                self.image.visible = self.menu.checkbox_show_image.checked
                 self.image_caption.visible = self.image.visible
 
 
