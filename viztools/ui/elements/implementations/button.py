@@ -9,9 +9,9 @@ from viztools.utils import RenderContext, Color
 class Button(UIElement):
     def __init__(
             self, rect: pg.Rect, text: str = "",
-            bg_color: Color = (180, 180, 180), hover_color: Color = (190, 190, 190),
-            clicked_color: Color = (200, 200, 210), border_color: Color = (100, 100, 100),
-            text_color: Color = (0, 0, 0)
+            bg_color: Color = (180, 180, 180), hover_color: Color = (195, 195, 195),
+            clicked_color: Color = (220, 220, 220), border_color: Color = (100, 100, 100),
+            text_color: Color = (10, 10, 10)
     ):
         super().__init__(rect)
         self.text = text
@@ -45,6 +45,10 @@ class Button(UIElement):
                 self.text_surface = render_context.font.render(self.text, True, self.text_color)
             text_rect = self.text_surface.get_rect(center=self.rect.center)
             screen.blit(self.text_surface, text_rect)
+
+    def set_text(self, text: str):
+        self.text = text
+        self.text_surface = None
 
     def update(self, render_context: RenderContext):
         pass
